@@ -1,0 +1,50 @@
+# Compila el sitio y lo publica en GitHub Pages.
+#
+# Se ejecuta en cada envío a `main` y también a mano desde la pestaña
+# «Actions» del repositorio. GitHub compila el proyecto en sus servidores, así
+# que la carpeta `dist/` no se sube al repositorio (sigue en .gitignore).
+#
+# Requisito, una sola vez: en Settings → Pages, dejar «Source» en
+# «GitHub Actions». Sin eso el despliegue falla.
+
+name: Desplegar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos que necesita el despliegue oficial de Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se envían dos cambios seguidos, el segundo espera en vez de pisar al
+# primero: así nunca se publica una versión a medias.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias y compilar
+        uses: withastro/action@v3
+        with:
+          node-version: 22
+
+  desplegar:
+    needs: compilar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: despliegue
+        uses: actions/deploy-pages@v4

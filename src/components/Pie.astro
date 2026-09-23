@@ -1,0 +1,325 @@
+---
+/**
+ * Pie de página + botón «volver arriba».
+ */
+import Icon from './Icon.astro';
+import { identidad, redes, navegacion, pie, contacto } from '@/data/perfil';
+import { rangoAnios } from '@/lib/texto';
+import { existeEnPublico } from '@/lib/archivos';
+
+const hayFoto = existeEnPublico(identidad.foto);
+---
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie__panel vidrio">
+      <div class="pie__superior">
+        <div class="pie__marca">
+          <a class="pie__logo" href="#inicio">
+            <span class="pie__mono">
+              {hayFoto ? (
+                <img src={identidad.foto} alt="" width="40" height="40" loading="lazy" decoding="async" />
+              ) : (
+                identidad.iniciales
+              )}
+            </span>
+            <span>
+              <strong>{identidad.nombre}</strong>
+              <small>{identidad.titular}</small>
+            </span>
+          </a>
+          <p class="pie__eslogan">{identidad.eslogan}</p>
+        </div>
+
+        <nav class="pie__mapa" aria-label="Enlaces del pie de página">
+          <h2 class="pie__titulo">Navegación</h2>
+          <ul role="list">
+            {
+              navegacion.map((item) => (
+                <li>
+                  <a class="enlace-sub" href={`#${item.id}`}>
+                    {item.etiqueta}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+
+        <div class="pie__contacto">
+          <h2 class="pie__titulo">Contacto</h2>
+          <p class="pie__ubicacion">
+            <Icon nombre="ubicacion" tam="0.95rem" />
+            {identidad.ubicacion}
+          </p>
+          <ul class="pie__redes" role="list">
+            {/* El correo, como en la sección Contáctame: icono, sin la
+                dirección escrita. */}
+            <li>
+              <a
+                class="icono-boton"
+                href={`mailto:${contacto.email}`}
+                aria-label={`Escribir a ${contacto.email}`}
+              >
+                <Icon nombre="sobre" tam="1rem" />
+              </a>
+            </li>
+            {
+              redes.items.map((red) => (
+                <li>
+                  <a
+                    class="icono-boton"
+                    href={red.url}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    aria-label={`${red.nombre} (pestaña nueva)`}
+                  >
+                    <Icon nombre={red.icono} tam="1rem" />
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      <hr class="divisor" />
+
+      <div class="pie__inferior">
+        <p>© {rangoAnios(pie.desde)} {identidad.nombre}. Todos los derechos reservados.</p>
+        <p class="pie__nota">{pie.nota}</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{/* Aparece al bajar; `interacciones.ts` alterna data-visible. */}
+<button class="arriba" type="button" data-arriba data-visible="false" aria-label="Volver arriba">
+  <Icon nombre="flecha-arriba" tam="1.15rem" />
+</button>
+
+<style>
+  .pie {
+    padding-block: var(--e-6) var(--e-6);
+  }
+
+  .pie__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-5);
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    border-radius: var(--r-xl);
+  }
+
+  .pie__superior {
+    display: grid;
+    gap: var(--e-6);
+  }
+
+  .pie__marca {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+  }
+
+  .pie__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-3);
+    transition: opacity var(--tr-base);
+  }
+
+  .pie__logo:hover {
+    opacity: 0.82;
+  }
+
+  .pie__logo span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+  }
+
+  .pie__logo strong {
+    font-family: var(--f-titulo);
+    font-size: var(--ts-md);
+    color: var(--t-fuerte);
+  }
+
+  .pie__logo small {
+    font-size: var(--ts-xs);
+    color: var(--t-suave);
+  }
+
+  .pie__mono {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--r-pastilla);
+    background: linear-gradient(140deg, var(--c-acento), var(--c-acento-oscuro));
+    color: var(--c-vacio);
+    font-family: var(--f-titulo);
+    font-size: var(--ts-sm);
+    font-weight: 700;
+  }
+
+  /* Si no hay foto, este mismo círculo muestra las iniciales. */
+  .pie__mono img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  .pie__eslogan {
+    max-width: 34ch;
+    font-size: var(--ts-sm);
+    color: var(--t-suave);
+  }
+
+  .pie__titulo {
+    margin-bottom: var(--e-3);
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--t-tenue);
+  }
+
+  .pie__mapa ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--ts-sm);
+  }
+
+  .pie__mapa a {
+    /* `fit-content` evita que el subrayado animado abarque toda la columna. */
+    width: fit-content;
+  }
+
+  .pie__contacto {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--e-2);
+    font-size: var(--ts-sm);
+  }
+
+  .pie__ubicacion {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-2);
+    color: var(--t-suave);
+  }
+
+  .pie__ubicacion :global(.icono) {
+    color: var(--c-acento);
+  }
+
+  .pie__redes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2);
+    margin-top: var(--e-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .pie__redes .icono-boton {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .pie__inferior {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--e-2) var(--e-4);
+    font-size: var(--ts-xs);
+    color: var(--t-tenue);
+  }
+
+  .pie__nota {
+    font-family: var(--f-mono);
+  }
+
+  @media (min-width: 46rem) {
+    .pie__superior {
+      grid-template-columns: 1.6fr 1fr 1.2fr;
+      gap: var(--e-5);
+    }
+  }
+
+  /* ── Volver arriba ─────────────────────────────────────────────────── */
+
+  .arriba {
+    position: fixed;
+    inset-block-end: var(--e-4);
+    inset-inline-end: var(--e-4);
+    z-index: var(--z-flotante);
+    display: grid;
+    place-items: center;
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: var(--r-pastilla);
+    border: 1px solid var(--v-borde-vivo);
+    background: rgb(28 33 31 / 0.75);
+    color: var(--t-fuerte);
+    box-shadow: var(--s-media);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      opacity var(--d-normal) var(--cv-salida),
+      transform var(--d-normal) var(--cv-rebote),
+      background-color var(--tr-base),
+      border-color var(--tr-base),
+      color var(--tr-base);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .arriba {
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  .arriba[data-visible='false'] {
+    opacity: 0;
+    transform: translateY(14px) scale(0.85);
+    /* Fuera de la vista y fuera del recorrido del tabulador. */
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .arriba[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+  }
+
+  .arriba:hover {
+    color: var(--c-acento-claro);
+    border-color: rgb(var(--rgb-acento) / 0.5);
+    transform: translateY(-3px);
+  }
+
+  .arriba:active {
+    transform: scale(0.92);
+  }
+
+  @media (min-width: 1024px) {
+    .arriba {
+      inset-block-end: var(--e-5);
+      inset-inline-end: var(--e-5);
+    }
+  }
+</style>

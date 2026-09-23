@@ -1,0 +1,152 @@
+---
+/**
+ * Redes sociales — una tarjeta-enlace por red.
+ *
+ * Cada tarjeta hereda el color de marca desde `perfil.ts` a través de la
+ * variable --marca, así el hover se tiñe solo sin escribir una regla CSS
+ * por red. Si añades una red nueva en los datos, aquí no hay que tocar nada.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import { redes } from '@/data/perfil';
+---
+
+<Seccion id="redes" antetitulo="Comunidad" titulo={redes.titulo} subtitulo={redes.subtitulo}>
+  <ul class="rejilla" style="--col-min: 16rem" role="list">
+    {
+      redes.items.map((red, i) => (
+        <li data-revelar="arriba" style={`--retardo: ${i * 80}ms`}>
+          <a
+            class="red vidrio vidrio--interactivo"
+            style={`--marca: ${red.color}`}
+            href={red.url}
+            target="_blank"
+            rel="noopener noreferrer me"
+            data-brillo
+          >
+            <span class="red__icono">
+              <Icon nombre={red.icono} tam="1.4rem" />
+            </span>
+
+            <span class="red__texto">
+              <strong class="red__nombre">{red.nombre}</strong>
+              <span class="red__usuario">{red.usuario}</span>
+              <span class="red__descripcion">{red.descripcion}</span>
+            </span>
+
+            <span class="red__flecha" aria-hidden="true">
+              <Icon nombre="flecha-derecha" tam="1.1rem" />
+            </span>
+
+            <span class="oculto-visual">(se abre en una pestaña nueva)</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Seccion>
+
+<style>
+  .red {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: var(--e-3) var(--e-4);
+    padding: var(--e-5) var(--e-4);
+    height: 100%;
+  }
+
+  .red__icono {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--r-md);
+    border: 1px solid var(--v-borde);
+    background: rgb(var(--rgb-hueso) / 0.05);
+    color: var(--t-normal);
+    transition:
+      color var(--d-normal) var(--cv-salida),
+      border-color var(--d-normal) var(--cv-salida),
+      background-color var(--d-normal) var(--cv-salida),
+      transform var(--d-normal) var(--cv-rebote);
+  }
+
+  /* El color de marca solo aparece al interactuar: en reposo todas las
+     tarjetas comparten el gris verdoso del sitio y el conjunto se lee como
+     una unidad, no como un mosaico de logos. */
+  .red:hover .red__icono,
+  .red:focus-visible .red__icono {
+    color: var(--marca);
+    border-color: color-mix(in srgb, var(--marca) 45%, transparent);
+    background: color-mix(in srgb, var(--marca) 14%, transparent);
+    transform: scale(1.08) rotate(-6deg);
+  }
+
+  .red__texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .red__nombre {
+    font-family: var(--f-titulo);
+    font-size: var(--ts-md);
+    color: var(--t-fuerte);
+    transition: color var(--tr-base);
+  }
+
+  .red:hover .red__nombre {
+    color: var(--marca);
+  }
+
+  .red__usuario {
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    color: var(--t-tenue);
+    /* Un @usuario largo no debe ensanchar la tarjeta. */
+    overflow-wrap: anywhere;
+  }
+
+  .red__descripcion {
+    margin-top: var(--e-2);
+    font-size: var(--ts-sm);
+    color: var(--t-suave);
+    line-height: 1.5;
+  }
+
+  .red__flecha {
+    display: grid;
+    place-items: center;
+    color: var(--t-tenue);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity var(--d-normal) var(--cv-salida),
+      transform var(--d-normal) var(--cv-salida),
+      color var(--d-normal) var(--cv-salida);
+  }
+
+  .red:hover .red__flecha,
+  .red:focus-visible .red__flecha {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--marca);
+  }
+
+  /* En táctil no hay hover: la flecha se muestra siempre para que se
+     entienda que la tarjeta lleva a otro sitio. */
+  @media (hover: none) {
+    .red__flecha {
+      opacity: 0.6;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .red:hover .red__icono {
+      transform: none;
+    }
+  }
+</style>

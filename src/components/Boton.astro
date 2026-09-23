@@ -1,0 +1,72 @@
+---
+/**
+ * Boton — un único componente para los tres tipos de acción del sitio.
+ *
+ * Decide solo si renderiza <a> o <button>: si le pasas `href` es un enlace,
+ * si no, es un botón. Eso evita el error clásico de maquetar enlaces como
+ * botones (que rompe abrir en pestaña nueva y la navegación por teclado).
+ *
+ *   <Boton href="#contacto" variante="primario" icono="sobre">Escríbeme</Boton>
+ *   <Boton tipo="submit" variante="primario">Enviar</Boton>
+ */
+import Icon from './Icon.astro';
+import type { NombreIcono } from '@/lib/iconos';
+
+interface Props {
+  href?: string;
+  variante?: 'primario' | 'secundario' | 'fantasma';
+  /** Icono a la izquierda del texto. */
+  icono?: NombreIcono;
+  /** Icono a la derecha. Se desplaza ligeramente al pasar el cursor. */
+  iconoDerecha?: NombreIcono;
+  /** Ocupa todo el ancho disponible. Útil en móvil y en formularios. */
+  bloque?: boolean;
+  tipo?: 'button' | 'submit' | 'reset';
+  /** Fuerza abrir en pestaña nueva. Si se omite, se deduce de la URL. */
+  externo?: boolean;
+  /** Necesario cuando el botón no tiene texto visible. */
+  etiqueta?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variante = 'secundario',
+  icono,
+  iconoDerecha,
+  bloque = false,
+  tipo = 'button',
+  externo,
+  etiqueta,
+  class: clase = '',
+  ...resto
+} = Astro.props;
+
+const Etiqueta = href ? 'a' : 'button';
+
+// Cualquier href que salga del sitio se abre en otra pestaña, con rel seguro.
+const esExterno = externo ?? Boolean(href && /^https?:\/\//.test(href));
+
+const clases = [
+  'boton',
+  `boton--${variante}`,
+  bloque && 'boton--bloque',
+  clase,
+];
+---
+
+<Etiqueta
+  class:list={clases}
+  href={href}
+  type={href ? undefined : tipo}
+  target={esExterno ? '_blank' : undefined}
+  rel={esExterno ? 'noopener noreferrer' : undefined}
+  aria-label={etiqueta}
+  data-onda
+  {...resto}
+>
+  {icono && <Icon nombre={icono} tam="1.15em" />}
+  <slot />
+  {iconoDerecha && <Icon nombre={iconoDerecha} tam="1.15em" class="icono--desplaza" />}
+</Etiqueta>

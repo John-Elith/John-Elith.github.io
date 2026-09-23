@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Resultado del build
+dist/
+.astro/
+
+# Entorno
+.env
+.env.production
+.env.local
+
+# Cachés de herramientas
+.vercel/
+.netlify/
+.wrangler/
+.vscode/*
+!.vscode/extensions.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Registros
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*

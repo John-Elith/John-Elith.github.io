@@ -1,0 +1,23 @@
+{
+  "name": "John Elith — Desarrollador Full Stack",
+  "short_name": "John Elith",
+  "description": "Portafolio de John Elith, desarrollador de software Full Stack especializado en C# y .NET.",
+  "lang": "es",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c211f",
+  "theme_color": "#1c211f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

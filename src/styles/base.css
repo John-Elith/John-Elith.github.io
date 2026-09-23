@@ -1,0 +1,215 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   BASE — reinicio, tipografía y primitivas de maquetación
+   ══════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  /* El desplazamiento suave lo gestiona el navegador; el JS solo lo usa como
+     respaldo. `scroll-padding-top` evita que la barra fija tape los títulos
+     al saltar a un ancla. */
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--alto-barra) + var(--e-4));
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  min-height: 100svh;
+  font-family: var(--f-texto);
+  font-size: var(--ts-base);
+  line-height: var(--lh-normal);
+  color: var(--t-normal);
+  /* Color sólido bajo el degradado: si el fondo tarda en pintar, nunca se ve
+     un flash blanco. */
+  background-color: var(--c-tinta);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Bloquea el scroll cuando el menú móvil está abierto. */
+body[data-menu-abierto='true'] {
+  overflow: hidden;
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+/* ── Tipografía ────────────────────────────────────────────────────────── */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--f-titulo);
+  font-weight: 600;
+  line-height: var(--lh-titulo);
+  color: var(--t-fuerte);
+  /* Reparte las líneas de forma equilibrada en vez de dejar una palabra
+     huérfana en la última línea. */
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--ts-3xl);
+  line-height: var(--lh-apretado);
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--ts-2xl);
+  letter-spacing: -0.025em;
+}
+
+h3 {
+  font-size: var(--ts-lg);
+  letter-spacing: -0.015em;
+}
+
+h4 {
+  font-size: var(--ts-md);
+  letter-spacing: -0.01em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+strong {
+  color: var(--t-fuerte);
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgb(var(--rgb-acento) / 0.35);
+  color: var(--c-hueso);
+}
+
+/* ── Accesibilidad ─────────────────────────────────────────────────────── */
+
+/* Anillo de foco visible solo con teclado, nunca al hacer clic con el ratón. */
+:focus-visible {
+  outline: 2px solid var(--c-acento-claro);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+/* Texto solo para lectores de pantalla. */
+.oculto-visual {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Enlace «Saltar al contenido»: invisible hasta recibir foco con Tab. */
+.saltar-contenido {
+  position: fixed;
+  top: var(--e-3);
+  left: var(--e-3);
+  z-index: 999;
+  padding: var(--e-3) var(--e-5);
+  border-radius: var(--r-pastilla);
+  background: var(--c-acento);
+  color: var(--c-vacio);
+  font-weight: 600;
+  transform: translateY(-160%);
+  transition: transform var(--d-rapida) var(--cv-rebote);
+}
+
+.saltar-contenido:focus-visible {
+  transform: translateY(0);
+}
+
+/* ── Primitivas de maquetación ─────────────────────────────────────────── */
+
+/* Columna centrada con márgenes laterales fluidos. */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-max);
+  margin-inline: auto;
+  padding-inline: var(--e-lateral);
+}
+
+/* Apilado vertical con separación configurable. */
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pila-gap, var(--e-4));
+}
+
+/* Fila que se parte sola en pantallas estrechas. */
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fila-gap, var(--e-3));
+}
+
+/* Rejilla que decide sola cuántas columnas caben, sin media queries.
+   `--col-min` es el ancho mínimo aceptable de una tarjeta. */
+.rejilla {
+  display: grid;
+  gap: var(--rejilla-gap, var(--e-4));
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--col-min, 17rem), 100%), 1fr));
+}
+
+/* Cualquier contenido ancho (tablas, bloques de código) se desplaza dentro
+   de su caja en vez de romper el ancho de la página. */
+.desbordable {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}

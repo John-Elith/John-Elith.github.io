@@ -1,0 +1,334 @@
+---
+/**
+ * Proyectos — rejilla de tarjetas.
+ *
+ * Los marcados como `destacado` ocupan dos columnas en pantallas anchas.
+ * La tarjeta entera es clicable gracias al patrón «stretched link»: el
+ * enlace del título estira un pseudo-elemento sobre toda la tarjeta, y los
+ * botones de abajo se elevan por encima con z-index. Esto evita anidar
+ * enlaces dentro de enlaces, que es HTML inválido y rompe el teclado.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import { proyectos } from '@/data/perfil';
+---
+
+<Seccion
+  id="proyectos"
+  antetitulo="Portafolio"
+  titulo={proyectos.titulo}
+  subtitulo={proyectos.subtitulo}
+>
+  <div class="proyectos">
+    {
+      proyectos.items.map((p, i) => {
+        // Enlace principal de la tarjeta: la demo manda sobre el repositorio.
+        const principal = p.demo ?? p.repo;
+        return (
+          <article
+            class:list={['proyecto', 'vidrio', 'vidrio--interactivo', p.destacado && 'proyecto--destacado']}
+            data-brillo
+            data-revelar="arriba"
+            style={`--retardo: ${i * 90}ms`}
+          >
+            <div class="proyecto__medio">
+              {p.imagen ? (
+                <img
+                  src={p.imagen}
+                  alt={`Captura del proyecto ${p.nombre}`}
+                  loading="lazy"
+                  decoding="async"
+                  width="640"
+                  height="400"
+                />
+              ) : (
+                /* Sin captura, generamos un marcador con la inicial. Es más
+                   honesto que una imagen de banco y no pesa nada. */
+                <div class="proyecto__marcador" aria-hidden="true">
+                  <span>{p.nombre.charAt(0)}</span>
+                  <Icon nombre="codigo" tam="1.5rem" />
+                </div>
+              )}
+              <span class="proyecto__anio">{p.anio}</span>
+            </div>
+
+            <div class="proyecto__cuerpo">
+              <h3 class="proyecto__nombre">
+                {principal ? (
+                  <a
+                    class="proyecto__enlace-principal"
+                    href={principal}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {p.nombre}
+                  </a>
+                ) : (
+                  p.nombre
+                )}
+              </h3>
+
+              <p class="proyecto__resumen">{p.resumen}</p>
+              <p class="proyecto__descripcion">{p.descripcion}</p>
+
+              <ul class="proyecto__tecnologias" role="list" aria-label="Tecnologías">
+                {p.tecnologias.map((t) => (
+                  <li class="etiqueta">{t}</li>
+                ))}
+              </ul>
+
+              {(p.repo || p.demo) && (
+                <div class="proyecto__enlaces">
+                  {p.demo && (
+                    <a
+                      class="proyecto__enlace"
+                      href={p.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon nombre="enlace-externo" tam="1rem" />
+                      <span>Ver demo</span>
+                      <span class="oculto-visual">de {p.nombre} (pestaña nueva)</span>
+                    </a>
+                  )}
+                  {p.repo && (
+                    <a
+                      class="proyecto__enlace"
+                      href={p.repo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon nombre="github" tam="1rem" />
+                      <span>Código</span>
+                      <span class="oculto-visual">de {p.nombre} en GitHub (pestaña nueva)</span>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+</Seccion>
+
+<style>
+  .proyectos {
+    display: grid;
+    gap: var(--e-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+  }
+
+  .proyecto {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  /* ── Cabecera visual ───────────────────────────────────────────────── */
+
+  .proyecto__medio {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: linear-gradient(145deg, var(--c-pizarra), var(--c-tinta) 60%, var(--c-vacio));
+    border-bottom: 1px solid var(--v-borde);
+  }
+
+  .proyecto__medio img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85);
+    transition:
+      transform var(--d-lenta) var(--cv-salida),
+      filter var(--d-lenta) var(--cv-salida);
+  }
+
+  .proyecto:hover .proyecto__medio img {
+    transform: scale(1.06);
+    filter: saturate(1);
+  }
+
+  .proyecto__marcador {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    gap: var(--e-2);
+    color: rgb(var(--rgb-acento) / 0.55);
+    background-image: radial-gradient(
+      circle at 50% 45%,
+      rgb(var(--rgb-acento) / 0.16),
+      transparent 62%
+    );
+    transition: transform var(--d-lenta) var(--cv-salida);
+  }
+
+  .proyecto__marcador span {
+    font-family: var(--f-titulo);
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgb(var(--rgb-hueso) / 0.14);
+  }
+
+  .proyecto:hover .proyecto__marcador {
+    transform: scale(1.06);
+  }
+
+  .proyecto__anio {
+    position: absolute;
+    inset-block-start: var(--e-3);
+    inset-inline-end: var(--e-3);
+    padding: 0.25em 0.7em;
+    border-radius: var(--r-pastilla);
+    border: 1px solid var(--v-borde);
+    background: rgb(var(--rgb-vacio) / 0.6);
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    color: var(--t-suave);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .proyecto__anio {
+      background: rgb(var(--rgb-vacio) / 0.4);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  /* ── Cuerpo ────────────────────────────────────────────────────────── */
+
+  .proyecto__cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+    /* Ocupa el alto restante para que los enlaces queden alineados abajo
+       en todas las tarjetas de la fila. */
+    flex: 1;
+    padding: var(--e-5) var(--e-4);
+  }
+
+  .proyecto__nombre {
+    font-size: var(--ts-lg);
+  }
+
+  .proyecto__enlace-principal {
+    transition: color var(--tr-base);
+  }
+
+  .proyecto__enlace-principal:hover {
+    color: var(--c-acento-claro);
+  }
+
+  /* La zona clicable se estira sobre toda la tarjeta. */
+  .proyecto__enlace-principal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .proyecto__resumen {
+    font-size: var(--ts-base);
+    color: var(--t-normal);
+  }
+
+  .proyecto__descripcion {
+    font-size: var(--ts-sm);
+    color: var(--t-suave);
+  }
+
+  .proyecto__tecnologias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2);
+    margin: auto 0 0;
+    padding: var(--e-2) 0 0;
+    list-style: none;
+  }
+
+  .proyecto__enlaces {
+    /* Por encima del enlace estirado, si no serían inalcanzables. */
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-3);
+    padding-top: var(--e-3);
+    border-top: 1px solid var(--v-borde);
+  }
+
+  .proyecto__enlace {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-2);
+    font-family: var(--f-titulo);
+    font-size: var(--ts-sm);
+    font-weight: 500;
+    color: var(--t-suave);
+    transition:
+      color var(--tr-base),
+      transform var(--d-rapida) var(--cv-salida);
+  }
+
+  .proyecto__enlace:hover {
+    color: var(--c-acento-claro);
+    transform: translateX(3px);
+  }
+
+  /* ── Destacado ─────────────────────────────────────────────────────── */
+
+  @media (min-width: 48rem) {
+    .proyectos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proyecto--destacado {
+      grid-column: span 2;
+    }
+
+    /* En formato ancho, imagen y texto van uno al lado del otro. */
+    .proyecto--destacado {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .proyecto--destacado .proyecto__medio {
+      flex: 0 0 42%;
+      aspect-ratio: auto;
+      border-bottom: none;
+      border-inline-end: 1px solid var(--v-borde);
+    }
+
+    .proyecto--destacado .proyecto__cuerpo {
+      padding: clamp(1.5rem, 3vw, 2.25rem);
+      justify-content: center;
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .proyectos {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .proyecto--destacado {
+      grid-column: span 3;
+    }
+
+    .proyecto--destacado .proyecto__medio {
+      flex-basis: 38%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .proyecto:hover .proyecto__medio img,
+    .proyecto:hover .proyecto__marcador,
+    .proyecto__enlace:hover {
+      transform: none;
+    }
+  }
+</style>

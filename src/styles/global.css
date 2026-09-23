@@ -1,0 +1,8 @@
+/* Punto de entrada único de estilos. El orden importa: los tokens deben
+   existir antes de que nadie los use, y las utilidades van al final para
+   poder ganar en especificidad cuando haga falta. */
+
+@import './tokens.css';
+@import './base.css';
+@import './componentes.css';
+@import './animaciones.css';

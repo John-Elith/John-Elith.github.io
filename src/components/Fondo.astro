@@ -1,0 +1,155 @@
+---
+/**
+ * Fondo — el degradado de la marca, compuesto por seis capas apiladas.
+ *
+ * Va fijo al viewport (no al documento) por dos razones: el desenfoque de
+ * 45px de la capa `tratamiento` es cara de repintar, y anclarla a la pantalla
+ * hace que solo se calcule una vez en lugar de en cada scroll.
+ *
+ * Orden de apilado, de abajo a arriba:
+ *   0 base        → el degradado lineal principal
+ *   1 tratamiento → manchas de color desenfocadas que rompen las bandas
+ *   2 brillo      → halos de luz (blanco arriba, verde al centro)
+ *   3 particulas  → puntitos tipo polvo en suspensión
+ *   4 vinieta     → oscurece bordes e inferior; es lo que garantiza que el
+ *                   texto claro tenga contraste suficiente en toda la página
+ *   5 ruido       → grano film que quita el aspecto "plano de CSS"
+ */
+
+// Grano generado con feTurbulence: pesa ~300 bytes y evita cargar una textura.
+const RUIDO = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E")`;
+---
+
+<div class="fondo" aria-hidden="true">
+  <div class="base"></div>
+  <div class="tratamiento"></div>
+  <div class="particulas"></div>
+  <div class="brillo"></div>
+  <div class="vinieta"></div>
+  <div class="ruido" style={`background-image: ${RUIDO}`}></div>
+</div>
+
+<style>
+  .fondo {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-fondo);
+    isolation: isolate;
+    overflow: hidden;
+    pointer-events: none;
+    /* Promueve la capa a la GPU una sola vez: sin esto, el desenfoque se
+       recalcula en CPU cada vez que algo encima cambia. */
+    transform: translateZ(0);
+  }
+
+  .fondo > * {
+    position: absolute;
+  }
+
+  /* ── Capa 0: degradado base ────────────────────────────────────────────
+     El degradado original arranca en #eef0ef (casi blanco). Lo escalamos al
+     218 % y lo anclamos abajo para que la franja clara quede por encima del
+     borde superior de la pantalla: así el viewport recorre el tramo
+     #37423d → #050606, sobre el que el texto claro mantiene un contraste de
+     ~9:1 (AAA). El brillo blanco del tramo original no se pierde: reaparece
+     como halo en la capa `.brillo`.
+
+     ¿Quieres el degradado completo, de blanco a negro? Pon:
+        background-size: 100% 100%;  background-position: 50% 50%;
+     …y cambia el color del texto de las secciones superiores a oscuro.     */
+  .base {
+    inset: 0;
+    z-index: 0;
+    background-image: linear-gradient(
+      187deg,
+      #eef0ef 0%,
+      #a5b3ac 18%,
+      #5d6f66 34%,
+      #37423d 54%,
+      #1c211f 81%,
+      #050606 100%
+    );
+    background-size: 100% 218%;
+    background-position: 50% 100%;
+    background-repeat: no-repeat;
+  }
+
+  /* ── Capa 1: manchas de color desenfocadas ─────────────────────────── */
+  .tratamiento {
+    inset: -20%;
+    z-index: 1;
+    background-image:
+      radial-gradient(circle at 70% 27%, rgb(28 33 31 / 0.8) 0%, transparent 30%),
+      radial-gradient(circle at 32% 53%, rgb(100 165 134 / 0.6) 0%, transparent 25%),
+      radial-gradient(circle at 49% 64%, rgb(5 6 6 / 0.9) 0%, transparent 20%);
+    filter: blur(45px);
+    opacity: 0.371;
+    animation: deriva 34s var(--cv-suave) infinite;
+  }
+
+  /* ── Capa 2: halos de luz ──────────────────────────────────────────── */
+  .brillo {
+    inset: 0;
+    z-index: 2;
+    background-image:
+      radial-gradient(ellipse at 52% 6%, rgb(255 255 255 / 0.22), transparent 38%),
+      radial-gradient(ellipse at 56% 43%, rgb(100 165 134 / 0.31), transparent 42%);
+    animation: deriva 46s var(--cv-suave) infinite reverse;
+  }
+
+  /* ── Capa 3: partículas ────────────────────────────────────────────── */
+  .particulas {
+    inset: 0;
+    z-index: 3;
+    background-image:
+      radial-gradient(circle at 64% 58%, rgb(255 255 255 / 0.32) 0, transparent 2px),
+      radial-gradient(circle at 53% 46%, rgb(255 255 255 / 0.38) 0, transparent 2px),
+      radial-gradient(circle at 18% 81%, rgb(218 221 219 / 0.36) 0, transparent 3px),
+      radial-gradient(circle at 81% 38%, rgb(218 221 219 / 0.17) 0, transparent 3px),
+      radial-gradient(circle at 49% 36%, rgb(218 221 219 / 0.26) 0, transparent 2px),
+      radial-gradient(circle at 16% 67%, rgb(255 255 255 / 0.28) 0, transparent 2px),
+      radial-gradient(circle at 18% 38%, rgb(218 221 219 / 0.1) 0, transparent 1px),
+      radial-gradient(circle at 76% 51%, rgb(218 221 219 / 0.38) 0, transparent 2px),
+      radial-gradient(circle at 55% 38%, rgb(218 221 219 / 0.18) 0, transparent 2px),
+      radial-gradient(circle at 72% 71%, rgb(255 255 255 / 0.24) 0, transparent 2px),
+      radial-gradient(circle at 7% 30%, rgb(218 221 219 / 0.34) 0, transparent 2px),
+      radial-gradient(circle at 42% 34%, rgb(255 255 255 / 0.27) 0, transparent 1px),
+      radial-gradient(circle at 57% 69%, rgb(218 221 219 / 0.11) 0, transparent 2px),
+      radial-gradient(circle at 29% 73%, rgb(218 221 219 / 0.15) 0, transparent 1px),
+      radial-gradient(circle at 82% 83%, rgb(218 221 219 / 0.29) 0, transparent 2px),
+      radial-gradient(circle at 87% 56%, rgb(255 255 255 / 0.28) 0, transparent 2px),
+      radial-gradient(circle at 58% 48%, rgb(255 255 255 / 0.21) 0, transparent 3px),
+      radial-gradient(circle at 85% 85%, rgb(255 255 255 / 0.36) 0, transparent 2px),
+      radial-gradient(circle at 48% 65%, rgb(218 221 219 / 0.31) 0, transparent 2px),
+      radial-gradient(circle at 20% 44%, rgb(255 255 255 / 0.23) 0, transparent 3px);
+    animation: flotar 18s var(--cv-suave) infinite;
+  }
+
+  /* ── Capa 4: viñeta ────────────────────────────────────────────────── */
+  .vinieta {
+    inset: 0;
+    z-index: 4;
+    background-image:
+      radial-gradient(circle at center, transparent 25%, rgb(0 0 0 / 0.21) 58%, rgb(0 0 0 / 0.85) 100%),
+      linear-gradient(to bottom, transparent 45%, rgb(0 0 0 / 0.81) 100%);
+  }
+
+  /* ── Capa 5: grano ─────────────────────────────────────────────────── */
+  .ruido {
+    inset: 0;
+    z-index: 5;
+    mix-blend-mode: soft-light;
+    opacity: 0.18;
+    background-size: 180px 180px;
+  }
+
+  /* El fondo es puramente decorativo: si el usuario pide menos movimiento,
+     se queda completamente quieto. */
+  @media (prefers-reduced-motion: reduce) {
+    .tratamiento,
+    .brillo,
+    .particulas {
+      animation: none;
+    }
+  }
+</style>

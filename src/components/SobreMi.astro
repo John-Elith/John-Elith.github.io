@@ -1,0 +1,191 @@
+---
+/**
+ * Sobre mí — biografía, cifras rápidas y bloque de habilidades.
+ * Corresponde al bloque «Biografía» que aparece bajo el hero en el boceto.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import { biografia, habilidades } from '@/data/perfil';
+import { formatoSimple } from '@/lib/texto';
+---
+
+<Seccion id="sobre-mi" antetitulo="Sobre mí" titulo={biografia.titulo} subtitulo={biografia.subtitulo}>
+  <div class="sobre">
+    {/* ── Texto biográfico ──────────────────────────────────────────── */}
+    <article class="sobre__texto vidrio vidrio--interactivo" data-brillo data-revelar="izquierda">
+      {biografia.parrafos.map((p) => <p set:html={formatoSimple(p)} />)}
+    </article>
+
+    {/* ── Cifras ────────────────────────────────────────────────────── */}
+    <aside class="sobre__cifras" aria-label="Datos rápidos">
+      {
+        biografia.estadisticas.map((e, i) => (
+          <div
+            class="cifra vidrio vidrio--interactivo"
+            data-brillo
+            data-revelar="derecha"
+            style={`--retardo: ${i * 90}ms`}
+          >
+            <span class="cifra__valor">{e.valor}</span>
+            <span class="cifra__etiqueta">{e.etiqueta}</span>
+          </div>
+        ))
+      }
+    </aside>
+  </div>
+
+  {/* ── Habilidades ─────────────────────────────────────────────────── */}
+  <div class="habilidades">
+    <h3 class="habilidades__titulo" data-revelar="arriba">Con qué trabajo</h3>
+
+    <div class="rejilla" style="--col-min: 15rem">
+      {
+        habilidades.map((grupo, i) => (
+          <article
+            class="grupo vidrio vidrio--interactivo"
+            data-brillo
+            data-revelar="arriba"
+            style={`--retardo: ${i * 90}ms`}
+          >
+            <header class="grupo__cabecera">
+              <span class="grupo__icono">
+                <Icon nombre={grupo.icono} tam="1.15rem" />
+              </span>
+              <h4>{grupo.categoria}</h4>
+            </header>
+            <ul class="grupo__items" role="list">
+              {grupo.items.map((item) => (
+                <li class="etiqueta">{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</Seccion>
+
+<style>
+  .sobre {
+    display: grid;
+    gap: var(--e-4);
+  }
+
+  .sobre__texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-4);
+    padding: clamp(1.35rem, 3.5vw, 2.5rem);
+  }
+
+  .sobre__texto p {
+    /* ~68 caracteres por línea: el rango donde el ojo salta de línea sin
+       perderse ni cansarse. */
+    max-width: 68ch;
+    font-size: var(--ts-md);
+  }
+
+  .sobre__cifras {
+    display: grid;
+    gap: var(--e-3);
+    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  }
+
+  .cifra {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--e-1);
+    padding: var(--e-4) var(--e-4);
+    text-align: left;
+  }
+
+  .cifra__valor {
+    font-family: var(--f-titulo);
+    font-size: var(--ts-xl);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--c-hueso), var(--c-acento-claro));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .cifra__etiqueta {
+    font-size: var(--ts-sm);
+    color: var(--t-suave);
+    line-height: 1.35;
+  }
+
+  /* ── Habilidades ───────────────────────────────────────────────────── */
+
+  .habilidades {
+    margin-top: var(--e-7);
+  }
+
+  .habilidades__titulo {
+    margin-bottom: var(--e-4);
+    font-size: var(--ts-lg);
+  }
+
+  .grupo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-4);
+    padding: var(--e-5) var(--e-4);
+    height: 100%;
+  }
+
+  .grupo__cabecera {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+  }
+
+  .grupo__icono {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: var(--r-md);
+    border: 1px solid rgb(var(--rgb-acento) / 0.3);
+    background: rgb(var(--rgb-acento) / 0.12);
+    color: var(--c-acento-claro);
+    transition:
+      transform var(--d-normal) var(--cv-rebote),
+      background-color var(--tr-base);
+  }
+
+  .grupo:hover .grupo__icono {
+    transform: rotate(-8deg) scale(1.08);
+    background: rgb(var(--rgb-acento) / 0.2);
+  }
+
+  .grupo__cabecera h4 {
+    font-size: var(--ts-md);
+  }
+
+  .grupo__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Dos columnas en cuanto hay sitio: la biografía manda y las cifras
+     acompañan en una columna estrecha a la derecha. */
+  @media (min-width: 52rem) {
+    .sobre {
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.9fr);
+      align-items: stretch;
+    }
+
+    .sobre__cifras {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

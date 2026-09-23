@@ -1,0 +1,145 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   TOKENS DE DISEÑO
+   Todas las decisiones visuales del sitio (color, tipografía, ritmo, sombras,
+   curvas de animación) viven aquí. Cambiar un token repinta la web entera.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Paleta base ──────────────────────────────────────────────────────
+     Extraída del degradado de fondo, de más clara a más oscura.          */
+  --c-hueso: #eef0ef;
+  --c-salvia: #a5b3ac;
+  --c-musgo: #5d6f66;
+  --c-pizarra: #37423d;
+  --c-tinta: #1c211f;
+  --c-vacio: #050606;
+
+  /* ── Acento ───────────────────────────────────────────────────────────
+     El verde de los halos radiales del fondo. Es el único color que
+     "grita": úsalo con moderación para que siga funcionando.             */
+  --c-acento: #64a586;
+  --c-acento-claro: #8fd3ae;
+  --c-acento-oscuro: #3f7a60;
+
+  /* Canal RGB suelto, para componer rgba() sin repetir números. */
+  --rgb-acento: 100 165 134;
+  --rgb-hueso: 238 240 239;
+  --rgb-vacio: 5 6 6;
+
+  /* ── Texto ───────────────────────────────────────────────────────────── */
+  --t-fuerte: var(--c-hueso);
+  --t-normal: rgb(var(--rgb-hueso) / 0.76);
+  --t-suave: rgb(var(--rgb-hueso) / 0.56);
+  --t-tenue: rgb(var(--rgb-hueso) / 0.38);
+
+  /* ── Cristal (glassmorphism) ──────────────────────────────────────────
+     Tres niveles de "solidez". El desenfoque es lo caro de renderizar:
+     por eso solo los paneles grandes lo llevan alto.                     */
+  --v-fondo: rgb(var(--rgb-hueso) / 0.045);
+  --v-fondo-medio: rgb(var(--rgb-hueso) / 0.07);
+  --v-fondo-alto: rgb(var(--rgb-hueso) / 0.1);
+  --v-borde: rgb(var(--rgb-hueso) / 0.11);
+  --v-borde-vivo: rgb(var(--rgb-hueso) / 0.24);
+  --v-desenfoque: 16px;
+  --v-desenfoque-alto: 28px;
+  /* Brillo superior que simula el canto biselado del cristal. */
+  --v-realce: inset 0 1px 0 0 rgb(var(--rgb-hueso) / 0.12);
+
+  /* ── Sombras ──────────────────────────────────────────────────────────
+     Sobre un fondo tan oscuro, la sombra aporta profundidad solo si es
+     muy difusa y muy negra.                                              */
+  --s-baja: 0 2px 8px rgb(var(--rgb-vacio) / 0.3);
+  --s-media: 0 8px 30px -8px rgb(var(--rgb-vacio) / 0.55);
+  --s-alta: 0 24px 60px -16px rgb(var(--rgb-vacio) / 0.7);
+  --s-acento: 0 8px 32px -8px rgb(var(--rgb-acento) / 0.45);
+
+  /* ── Tipografía ───────────────────────────────────────────────────────
+     Escala fluida: cada tamaño interpola solo entre 360px y 1440px de
+     ancho de viewport, así nunca hay saltos bruscos entre breakpoints.   */
+  --f-titulo: 'Outfit Variable', 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --f-texto: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --f-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+
+  --ts-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.78rem);
+  --ts-sm: clamp(0.82rem, 0.79rem + 0.15vw, 0.9rem);
+  --ts-base: clamp(0.94rem, 0.9rem + 0.2vw, 1.05rem);
+  --ts-md: clamp(1.05rem, 1rem + 0.28vw, 1.2rem);
+  --ts-lg: clamp(1.25rem, 1.13rem + 0.6vw, 1.6rem);
+  --ts-xl: clamp(1.6rem, 1.35rem + 1.2vw, 2.4rem);
+  --ts-2xl: clamp(2rem, 1.55rem + 2.1vw, 3.4rem);
+  --ts-3xl: clamp(2.6rem, 1.8rem + 3.6vw, 5rem);
+
+  --lh-apretado: 1.08;
+  --lh-titulo: 1.18;
+  --lh-normal: 1.62;
+
+  /* ── Ritmo y medidas ──────────────────────────────────────────────────── */
+  --e-1: 0.25rem;
+  --e-2: 0.5rem;
+  --e-3: 0.75rem;
+  --e-4: 1rem;
+  --e-5: 1.5rem;
+  --e-6: 2rem;
+  --e-7: 3rem;
+  --e-8: 4rem;
+  --e-9: 6rem;
+
+  /* Espacio vertical entre secciones: crece con la pantalla. */
+  --e-seccion: clamp(4rem, 9vw, 8rem);
+  /* Margen lateral del contenido. */
+  --e-lateral: clamp(1.15rem, 4vw, 3.25rem);
+  /* Ancho máximo de la columna de contenido. */
+  --ancho-max: 1140px;
+  /* Ancho del carril de navegación en escritorio. */
+  --ancho-carril: 17.5rem;
+  /* Altura de la barra superior en móvil. */
+  --alto-barra: 4rem;
+
+  /* ── Radios ───────────────────────────────────────────────────────────── */
+  --r-sm: 0.5rem;
+  --r-md: 0.85rem;
+  --r-lg: 1.25rem;
+  --r-xl: 1.75rem;
+  --r-2xl: 2.25rem;
+  --r-pastilla: 999px;
+
+  /* ── Curvas y duraciones ──────────────────────────────────────────────
+     `--cv-salida` es la de uso general: arranca rápido y frena suave, que
+     es lo que el ojo lee como "fluido". `--cv-rebote` solo para micro-
+     interacciones pequeñas (iconos, badges); en paneles grandes marea.   */
+  --cv-salida: cubic-bezier(0.22, 1, 0.36, 1);
+  --cv-suave: cubic-bezier(0.65, 0, 0.35, 1);
+  --cv-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --d-instante: 120ms;
+  --d-rapida: 220ms;
+  --d-normal: 380ms;
+  --d-lenta: 620ms;
+  --d-muy-lenta: 1100ms;
+
+  /* Transición de conveniencia para hovers de propósito general. */
+  --tr-base: var(--d-rapida) var(--cv-salida);
+
+  /* ── Capas ────────────────────────────────────────────────────────────── */
+  --z-fondo: 0;
+  --z-contenido: 10;
+  --z-flotante: 40;
+  --z-carril: 50;
+  --z-barra: 60;
+  --z-menu: 70;
+}
+
+/* Los usuarios que piden menos movimiento reciben las mismas transiciones,
+   pero reducidas a algo casi instantáneo — no las eliminamos del todo para
+   que los cambios de estado (foco, activo) sigan siendo perceptibles. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-instante: 1ms;
+    --d-rapida: 1ms;
+    --d-normal: 1ms;
+    --d-lenta: 1ms;
+    --d-muy-lenta: 1ms;
+  }
+}

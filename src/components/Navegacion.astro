@@ -1,0 +1,683 @@
+---
+/**
+ * Navegación — un solo componente para los dos modos:
+ *
+ *   ≥1024px  carril lateral fijo, siempre visible (como en el boceto)
+ *   <1024px  barra superior + panel deslizante con velo
+ *
+ * Es el mismo marcado en ambos casos; solo cambia la presentación. Así no
+ * duplicamos los enlaces, que es la causa habitual de menús que se
+ * desincronizan y de enlaces repetidos para los lectores de pantalla.
+ *
+ * El panel va envuelto en <Peel> (canvas-ui): al acercar el cursor al borde
+ * izquierdo, la hoja se enrolla y deja ver un reverso con accesos rápidos.
+ * El efecto usa la API experimental «HTML-in-canvas»; en los navegadores que
+ * no la tienen, Peel pinta el panel tal cual y el reverso no existe.
+ */
+import Icon from './Icon.astro';
+import Peel from './canvasui/Peel';
+import { navegacion, identidad, redes, contacto } from '@/data/perfil';
+import { existeEnPublico } from '@/lib/archivos';
+
+const hayFoto = existeEnPublico(identidad.foto);
+const hayCv = identidad.cv !== null && existeEnPublico(identidad.cv);
+---
+
+<a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+
+{/* ── Barra superior: solo móvil y tablet ─────────────────────────────── */}
+<header class="barra" data-barra>
+  <a class="marca" href="#inicio" aria-label={`${identidad.nombre} — ir al inicio`}>
+    <span class="marca__mono">{identidad.iniciales}</span>
+    <span class="marca__nombre">{identidad.nombre}</span>
+  </a>
+
+  <button
+    id="alternar-menu"
+    class="hamburguesa"
+    type="button"
+    aria-expanded="false"
+    aria-controls="menu-principal"
+    aria-label="Abrir menú de navegación"
+  >
+    <span class="hamburguesa__linea"></span>
+    <span class="hamburguesa__linea"></span>
+    <span class="hamburguesa__linea"></span>
+  </button>
+</header>
+
+{/* ── Carril / panel ──────────────────────────────────────────────────── */}
+<nav id="menu-principal" class="carril" aria-label="Navegación principal">
+  {/* Solo se hidrata con ratón o trackpad: sin cursor que se acerque al
+      borde, el efecto no puede dispararse y el JS sobraría. Sin hidratar,
+      Peel ya sirve el panel completo en el HTML. */}
+  <Peel
+    client:media="(hover: hover) and (pointer: fine)"
+    className="carril__peel"
+    side="left"
+    mode="cursor"
+    reveal={112}
+    zone={72}
+    curl={120}
+    bow={28}
+    bulge={22}
+    shade={0.35}
+    shine={0.8}
+    shineDistance={260}
+    perspective={1400}
+    smoothing={0.28}
+    snapshotStyle={{
+      /* El vidrio esmerilado no sale en la captura (no hay backdrop-filter
+         dentro de una imagen): sin esto, la hoja despegada se vería
+         transparente. Tonos tomados del panel real sobre el fondo. */
+      background: 'linear-gradient(170deg, #272c2a, #1a1e1c)',
+      borderRadius: '1.25rem',
+    }}
+  >
+  <div class="carril__panel vidrio vidrio--alto">
+    <a class="perfil-mini" href="#inicio">
+      <span class="perfil-mini__avatar">
+        {
+          hayFoto && (
+            <img src={identidad.foto} alt="" width="44" height="44" loading="lazy" decoding="async" />
+          )
+        }
+        <span class="perfil-mini__iniciales">{identidad.iniciales}</span>
+      </span>
+      <span class="perfil-mini__texto">
+        <strong>{identidad.nombre}</strong>
+        <small>Full Stack Developer</small>
+      </span>
+    </a>
+
+    <ul class="menu" role="list">
+      {
+        navegacion.map((item, i) => (
+          <li class="menu__item" style={`--retardo: ${i * 55}ms`}>
+            <a class="pastilla" href={`#${item.id}`} data-enlace-seccion={item.id}>
+              <Icon nombre={item.icono} tam="1.15rem" class="pastilla__icono" />
+              <span class="pastilla__texto">{item.etiqueta}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="carril__pie">
+      <span class="carril__pie-titulo">Sígueme</span>
+      <ul class="carril__redes" role="list">
+        {
+          redes.items.map((red) => (
+            <li>
+              <a
+                class="icono-boton"
+                href={red.url}
+                target="_blank"
+                rel="noopener noreferrer me"
+                aria-label={`${red.nombre} (se abre en una pestaña nueva)`}
+              >
+                <Icon nombre={red.icono} tam="1.05rem" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  {/* Reverso: lo que queda al descubierto al despegar la hoja. Solo se ven
+      los primeros `reveal` píxeles, así que todo va en una columna estrecha. */}
+  <div slot="under" class="reverso vidrio">
+    <span class="reverso__mono" aria-hidden="true">{identidad.iniciales}</span>
+    <span class="reverso__lema">¿Hablamos?</span>
+    <ul class="reverso__acciones" role="list">
+      <li>
+        <a class="icono-boton" href={`mailto:${contacto.email}`} aria-label={`Escribir a ${contacto.email}`}>
+          <Icon nombre="sobre" tam="1.05rem" />
+        </a>
+      </li>
+      <li>
+        <a class="icono-boton" href="#contacto" aria-label="Ir al formulario de contacto">
+          <Icon nombre="enviar" tam="1.05rem" />
+        </a>
+      </li>
+      {
+        hayCv && (
+          <li>
+            <a class="icono-boton" href={identidad.cv} download aria-label="Descargar CV en PDF">
+              <Icon nombre="descargar" tam="1.05rem" />
+            </a>
+          </li>
+        )
+      }
+    </ul>
+  </div>
+  </Peel>
+</nav>
+
+{/* Capa oscura tras el panel en móvil. Cerrar tocándola es lo que la gente
+    intenta por instinto, así que tiene que funcionar. */}
+<div class="velo" data-cerrar-menu hidden></div>
+
+<style>
+  /* ═══════════════════════  BARRA SUPERIOR (móvil)  ═══════════════════ */
+
+  .barra {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: var(--z-barra);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-3);
+    height: var(--alto-barra);
+    padding-inline: var(--e-lateral);
+    background: rgb(28 33 31 / 0.55);
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--d-normal) var(--cv-salida),
+      border-color var(--d-normal) var(--cv-salida),
+      box-shadow var(--d-normal) var(--cv-salida);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .barra {
+      background: rgb(28 33 31 / 0.35);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      backdrop-filter: blur(14px) saturate(150%);
+    }
+  }
+
+  /* `interacciones.ts` marca la barra en cuanto la página se desplaza:
+     arriba del todo debe ser invisible, y sólida en cuanto hay contenido
+     pasando por debajo. */
+  .barra[data-desplazado='true'] {
+    background: rgb(28 33 31 / 0.72);
+    border-bottom-color: var(--v-borde);
+    box-shadow: var(--s-media);
+  }
+
+  .marca {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-3);
+    font-family: var(--f-titulo);
+    font-weight: 600;
+    color: var(--t-fuerte);
+    transition: opacity var(--tr-base);
+  }
+
+  .marca:hover {
+    opacity: 0.8;
+  }
+
+  .marca__mono {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--r-md);
+    background: linear-gradient(140deg, var(--c-acento), var(--c-acento-oscuro));
+    color: var(--c-vacio);
+    font-size: var(--ts-sm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: var(--s-acento);
+  }
+
+  .marca__nombre {
+    font-size: var(--ts-md);
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Botón hamburguesa ──────────────────────────────────────────────
+     Tres líneas que se convierten en una X: las dos exteriores rotan hasta
+     cruzarse y la del medio se desvanece hacia un lado.                  */
+
+  .hamburguesa {
+    display: grid;
+    place-content: center;
+    gap: 5px;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--r-md);
+    border: 1px solid var(--v-borde);
+    background: var(--v-fondo);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--tr-base),
+      border-color var(--tr-base),
+      transform var(--d-rapida) var(--cv-rebote);
+  }
+
+  .hamburguesa:hover {
+    background: var(--v-fondo-alto);
+    border-color: var(--v-borde-vivo);
+  }
+
+  .hamburguesa:active {
+    transform: scale(0.92);
+  }
+
+  .hamburguesa__linea {
+    display: block;
+    width: 1.15rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--t-fuerte);
+    transition:
+      transform var(--d-normal) var(--cv-salida),
+      opacity var(--d-rapida) var(--cv-salida);
+  }
+
+  .hamburguesa[aria-expanded='true'] .hamburguesa__linea:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburguesa[aria-expanded='true'] .hamburguesa__linea:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  .hamburguesa[aria-expanded='true'] .hamburguesa__linea:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ═══════════════════════  CARRIL / PANEL  ═══════════════════════ */
+
+  .carril {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: var(--z-menu);
+    display: flex;
+    width: min(21rem, 85vw);
+    padding: var(--e-3);
+  }
+
+  /* Raíz del componente React: no lleva el atributo de ámbito de Astro. */
+  .carril :global(.carril__peel) {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Sin barra de desplazamiento: el panel ocupa exactamente el alto del
+     carril y, en pantallas bajas, se compacta (ver más abajo) en lugar de
+     desbordarse. */
+  .carril__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-5);
+    height: 100%;
+    padding: var(--e-5) var(--e-4);
+    overflow: hidden;
+  }
+
+  /* ── Reverso (solo visible mientras la hoja está despegada) ───────── */
+
+  .reverso {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--e-4);
+    /* Coincide con `reveal` de <Peel>: lo que pase de ahí queda tapado. */
+    width: 112px;
+    height: 100%;
+    padding: var(--e-5) var(--e-3);
+    border-color: rgb(var(--rgb-acento) / 0.35);
+    background: linear-gradient(170deg, rgb(var(--rgb-acento) / 0.22), rgb(var(--rgb-acento) / 0.04));
+  }
+
+  .reverso__mono {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--r-pastilla);
+    background: linear-gradient(140deg, var(--c-acento), var(--c-acento-oscuro));
+    color: var(--c-vacio);
+    font-family: var(--f-titulo);
+    font-size: var(--ts-sm);
+    font-weight: 700;
+  }
+
+  .reverso__lema {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--c-acento-claro);
+  }
+
+  .reverso__acciones {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-2);
+    margin: auto 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* ── Cabecera del carril ─────────────────────────────────────────── */
+
+  .perfil-mini {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    padding: var(--e-2);
+    border-radius: var(--r-md);
+    transition: background-color var(--tr-base);
+  }
+
+  .perfil-mini:hover {
+    background: var(--v-fondo);
+  }
+
+  .perfil-mini__avatar {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    border-radius: var(--r-pastilla);
+    background: linear-gradient(140deg, var(--c-musgo), var(--c-pizarra));
+    border: 1px solid var(--v-borde-vivo);
+    overflow: hidden;
+  }
+
+  .perfil-mini__avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  /* Las iniciales viven debajo de la foto: si el archivo no existe, la
+     etiqueta <img> rota queda transparente y se ven ellas. */
+  .perfil-mini__iniciales {
+    font-family: var(--f-titulo);
+    font-size: var(--ts-sm);
+    font-weight: 700;
+    color: var(--t-fuerte);
+  }
+
+  .perfil-mini__texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+  }
+
+  .perfil-mini__texto strong {
+    font-family: var(--f-titulo);
+    font-size: var(--ts-base);
+    color: var(--t-fuerte);
+  }
+
+  .perfil-mini__texto small {
+    font-size: var(--ts-xs);
+    color: var(--t-suave);
+  }
+
+  /* ── Lista de enlaces ────────────────────────────────────────────── */
+
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Los ítems entran escalonados al abrir el panel en móvil. */
+  .menu__item {
+    opacity: 1;
+  }
+
+  .pastilla {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    padding: 0.7rem 1rem;
+    border-radius: var(--r-pastilla);
+    border: 1px solid var(--v-borde);
+    background: rgb(var(--rgb-hueso) / 0.03);
+    font-family: var(--f-titulo);
+    font-size: var(--ts-base);
+    font-weight: 500;
+    color: var(--t-normal);
+    overflow: hidden;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color var(--tr-base),
+      border-color var(--tr-base),
+      background-color var(--tr-base),
+      transform var(--d-rapida) var(--cv-salida);
+  }
+
+  /* Relleno que barre de izquierda a derecha al pasar el cursor. */
+  .pastilla::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(100deg, rgb(var(--rgb-acento) / 0.22), rgb(var(--rgb-acento) / 0.04));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--d-normal) var(--cv-salida);
+  }
+
+  .pastilla:hover {
+    color: var(--t-fuerte);
+    border-color: rgb(var(--rgb-acento) / 0.35);
+    transform: translateX(4px);
+  }
+
+  .pastilla:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* El <svg> lo genera el componente Icon, así que no lleva el atributo de
+     ámbito de este archivo: hay que envolverlo en :global(). El ancestro
+     `.pastilla` sí está acotado, de modo que la regla sigue sin escaparse
+     al resto del sitio. */
+  .pastilla :global(.pastilla__icono) {
+    color: var(--t-tenue);
+    transition:
+      color var(--tr-base),
+      transform var(--d-rapida) var(--cv-rebote);
+  }
+
+  .pastilla:hover :global(.pastilla__icono) {
+    color: var(--c-acento-claro);
+    transform: scale(1.15) rotate(-6deg);
+  }
+
+  /* ── Sección activa ──────────────────────────────────────────────
+     `aria-current="true"` lo pone el scrollspy. Se marca con color, un
+     fondo tenue y una barra vertical a la izquierda.                   */
+
+  .pastilla[aria-current='true'] {
+    color: var(--c-acento-claro);
+    border-color: rgb(var(--rgb-acento) / 0.45);
+    background: rgb(var(--rgb-acento) / 0.12);
+  }
+
+  .pastilla[aria-current='true'] :global(.pastilla__icono) {
+    color: var(--c-acento-claro);
+  }
+
+  .pastilla::after {
+    content: '';
+    position: absolute;
+    inset-block: 25%;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--c-acento-claro);
+    transform: scaleY(0);
+    transition: transform var(--d-normal) var(--cv-rebote);
+  }
+
+  .pastilla[aria-current='true']::after {
+    transform: scaleY(1);
+  }
+
+  /* ── Pie del carril ──────────────────────────────────────────────── */
+
+  .carril__pie {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+    /* Empuja el bloque al fondo del panel. */
+    margin-top: auto;
+    padding-top: var(--e-4);
+    border-top: 1px solid var(--v-borde);
+  }
+
+  .carril__pie-titulo {
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--t-tenue);
+  }
+
+  .carril__redes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .carril__redes .icono-boton {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  /* ═══════════════════════  VELO  ═══════════════════════ */
+
+  .velo {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-menu) - 1);
+    background: rgb(5 6 6 / 0.65);
+    opacity: 0;
+    transition: opacity var(--d-normal) var(--cv-salida);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .velo {
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+  }
+
+  .velo[hidden] {
+    display: none;
+  }
+
+  :global(body[data-menu-abierto='true']) .velo {
+    opacity: 1;
+  }
+
+  /* ═══════════════  MODO MÓVIL: el carril es un panel  ═══════════════ */
+
+  @media (max-width: 1023.98px) {
+    .carril {
+      padding-block: var(--e-3);
+      transform: translateX(-104%);
+      visibility: hidden;
+      transition:
+        transform var(--d-normal) var(--cv-salida),
+        visibility 0s linear var(--d-normal);
+    }
+
+    :global(body[data-menu-abierto='true']) .carril {
+      transform: translateX(0);
+      visibility: visible;
+      transition:
+        transform var(--d-normal) var(--cv-salida),
+        visibility 0s;
+    }
+
+    /* Entrada escalonada de los enlaces, una vez el panel ya está dentro. */
+    :global(body[data-menu-abierto='true']) .menu__item {
+      animation: aparecer-izquierda var(--d-normal) var(--cv-salida) both;
+      animation-delay: calc(var(--retardo, 0ms) + 120ms);
+    }
+  }
+
+  /* ═══════════════  MODO ESCRITORIO: carril permanente  ═══════════════ */
+
+  @media (min-width: 1024px) {
+    .barra,
+    .velo {
+      display: none;
+    }
+
+    .carril {
+      width: var(--ancho-carril);
+      padding: var(--e-4);
+      /* Ya no es un diálogo: no debe atrapar el foco ni tapar nada. */
+      z-index: var(--z-carril);
+      transform: none;
+      visibility: visible;
+    }
+  }
+
+  /* Pantallas bajas: se aprietan márgenes y pastillas para que todo quepa
+     sin barra de desplazamiento. */
+  @media (max-height: 720px) {
+    .carril__panel {
+      gap: var(--e-3);
+      padding-block: var(--e-4);
+    }
+
+    .menu {
+      gap: var(--e-1);
+    }
+
+    .pastilla {
+      padding-block: 0.5rem;
+    }
+
+    .carril__pie {
+      padding-top: var(--e-3);
+    }
+  }
+
+  @media (max-height: 580px) {
+    .perfil-mini__texto small,
+    .carril__pie-titulo {
+      display: none;
+    }
+
+    .pastilla {
+      padding-block: 0.35rem;
+      font-size: var(--ts-sm);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pastilla:hover {
+      transform: none;
+    }
+
+    :global(body[data-menu-abierto='true']) .menu__item {
+      animation: none;
+    }
+  }
+</style>

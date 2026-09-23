@@ -1,0 +1,45 @@
+---
+/**
+ * Seccion — envoltorio común de todas las secciones de la página.
+ *
+ * Centraliza tres cosas que si se copian a mano acaban divergiendo:
+ * el `id` del ancla (que usan el menú y el scrollspy), la jerarquía de
+ * encabezados y el ritmo vertical.
+ */
+interface Props {
+  /** Debe coincidir con el `id` correspondiente en `navegacion` (perfil.ts). */
+  id: string;
+  /** Texto pequeño en versalitas sobre el título. */
+  antetitulo?: string;
+  titulo: string;
+  subtitulo?: string;
+  class?: string;
+}
+
+const { id, antetitulo, titulo, subtitulo, class: clase = '' } = Astro.props;
+const idTitulo = `${id}-titulo`;
+---
+
+<section id={id} class:list={['seccion', clase]} aria-labelledby={idTitulo}>
+  <header class="seccion__cabecera">
+    {
+      antetitulo && (
+        <p class="antetitulo" data-revelar="arriba">
+          {antetitulo}
+        </p>
+      )
+    }
+    <h2 id={idTitulo} class="seccion__titulo" data-revelar="arriba" style="--retardo: 70ms">
+      {titulo}
+    </h2>
+    {
+      subtitulo && (
+        <p class="seccion__subtitulo" data-revelar="arriba" style="--retardo: 140ms">
+          {subtitulo}
+        </p>
+      )
+    }
+  </header>
+
+  <slot />
+</section>

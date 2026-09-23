@@ -1,0 +1,77 @@
+---
+/**
+ * Hobbies — rejilla ligera de intereses personales.
+ *
+ * Es la sección menos "corporativa" del sitio, así que las tarjetas son más
+ * pequeñas y el movimiento algo más juguetón que en el resto.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import { hobbies } from '@/data/perfil';
+---
+
+<Seccion id="hobbies" antetitulo="Fuera del código" titulo={hobbies.titulo} subtitulo={hobbies.subtitulo}>
+  <ul class="rejilla" style="--col-min: 14rem" role="list">
+    {
+      hobbies.items.map((h, i) => (
+        <li
+          class="hobby vidrio vidrio--interactivo"
+          data-brillo
+          data-revelar="escala"
+          style={`--retardo: ${i * 70}ms`}
+        >
+          <span class="hobby__icono">
+            <Icon nombre={h.icono} tam="1.35rem" />
+          </span>
+          <h3 class="hobby__nombre">{h.nombre}</h3>
+          <p class="hobby__descripcion">{h.descripcion}</p>
+        </li>
+      ))
+    }
+  </ul>
+</Seccion>
+
+<style>
+  .hobby {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+    padding: var(--e-5) var(--e-4);
+    height: 100%;
+  }
+
+  .hobby__icono {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--r-lg);
+    border: 1px solid rgb(var(--rgb-acento) / 0.28);
+    background: linear-gradient(140deg, rgb(var(--rgb-acento) / 0.2), rgb(var(--rgb-acento) / 0.05));
+    color: var(--c-acento-claro);
+    transition:
+      transform var(--d-normal) var(--cv-rebote),
+      box-shadow var(--d-normal) var(--cv-salida);
+  }
+
+  .hobby:hover .hobby__icono {
+    transform: translateY(-4px) rotate(-10deg) scale(1.1);
+    box-shadow: var(--s-acento);
+  }
+
+  .hobby__nombre {
+    font-size: var(--ts-md);
+  }
+
+  .hobby__descripcion {
+    font-size: var(--ts-sm);
+    color: var(--t-suave);
+    line-height: 1.55;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hobby:hover .hobby__icono {
+      transform: none;
+    }
+  }
+</style>

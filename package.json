@@ -1,0 +1,31 @@
+{
+  "name": "paginaweb-johnelith",
+  "version": "1.0.0",
+  "description": "Portafolio personal de John Elith — desarrollador de software Full Stack.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "og": "node scripts/generar-og.mjs",
+    "astro": "astro"
+  },
+  "keywords": [],
+  "author": "John Elith",
+  "license": "MIT",
+  "dependencies": {
+    "@astrojs/react": "^6.0.6",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/outfit": "^5.3.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^7.3.3",
+    "html-to-image": "^1.11.13",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

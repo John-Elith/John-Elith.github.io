@@ -1,0 +1,223 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMACIONES
+   Fotogramas clave + utilidades de aparición al hacer scroll.
+   Regla de la casa: nada se mueve más de ~24px ni dura más de ~700ms. El
+   movimiento debe explicar de dónde viene un elemento, no llamar la atención.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes aparecer-arriba {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes aparecer-izquierda {
+  from {
+    opacity: 0;
+    transform: translate3d(-22px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes aparecer-escala {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fundido {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes onda-expandir {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes latido {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Deriva muy lenta de las capas del fondo: da vida sin distraer. */
+@keyframes deriva {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(2.5%, -1.8%, 0) scale(1.05);
+  }
+  66% {
+    transform: translate3d(-2%, 2.2%, 0) scale(1.02);
+  }
+}
+
+@keyframes rebote-suave {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+@keyframes rotar-roles {
+  0%,
+  16% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  4%,
+  14% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  18%,
+  100% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+/* ─────────────────────  APARICIÓN AL HACER SCROLL  ─────────────────────
+   `interacciones.ts` marca cada elemento con [data-revelar] y le añade
+   `.visible` cuando entra en pantalla. El retardo escalonado se pasa por
+   la variable --retardo directamente desde el HTML.
+
+   El estado inicial solo se aplica si el JS ha arrancado (html.js). Así,
+   si el JS falla o está desactivado, todo el contenido se ve igualmente.  */
+
+.js [data-revelar] {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.js [data-revelar='arriba'] {
+  transform: translate3d(0, 26px, 0);
+}
+
+.js [data-revelar='izquierda'] {
+  transform: translate3d(-26px, 0, 0);
+}
+
+.js [data-revelar='derecha'] {
+  transform: translate3d(26px, 0, 0);
+}
+
+.js [data-revelar='escala'] {
+  transform: scale(0.96);
+}
+
+.js [data-revelar].visible {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--d-lenta) var(--cv-salida),
+    transform var(--d-lenta) var(--cv-salida);
+  transition-delay: var(--retardo, 0ms);
+}
+
+/* Una vez visible ya no vamos a volver a animarlo: liberamos la capa de
+   composición para no gastar memoria de vídeo. */
+.js [data-revelar].visible {
+  will-change: auto;
+}
+
+/* Con «reducir movimiento» activo, todo aparece al instante y sin desplazarse. */
+@media (prefers-reduced-motion: reduce) {
+  .js [data-revelar] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .flota,
+  .estado__punto::after {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────  UTILIDADES  ───────────────────────── */
+
+.flota {
+  animation: flotar 6s var(--cv-suave) infinite;
+}
+
+/* Texto con degradado de acento. Se usa en palabras sueltas del titular. */
+.texto-degradado {
+  background: linear-gradient(120deg, var(--c-hueso) 10%, var(--c-acento-claro) 55%, var(--c-salvia));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Sin esto, algunos navegadores recortan las colas de las letras. */
+  padding-bottom: 0.08em;
+}
+
+/* Subrayado animado para enlaces de texto. */
+.enlace-sub {
+  position: relative;
+  color: var(--t-normal);
+  transition: color var(--tr-base);
+}
+
+.enlace-sub::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--d-normal) var(--cv-salida);
+}
+
+.enlace-sub:hover {
+  color: var(--c-acento-claro);
+}
+
+.enlace-sub:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}

@@ -1,0 +1,330 @@
+---
+/**
+ * Contacto — datos directos + formulario.
+ *
+ * El sitio es estático, así que el formulario no tiene servidor propio.
+ * Funciona de dos maneras según `contacto.endpointFormulario`:
+ *   • con endpoint  → se envía por fetch a Formspree/Web3Forms/etc.
+ *   • sin endpoint  → abre el cliente de correo con el mensaje ya redactado
+ * En ambos casos el <form> tiene `action` y `method` reales, así que si el
+ * JavaScript falla el navegador puede enviarlo igualmente.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import Boton from './Boton.astro';
+import { contacto, identidad } from '@/data/perfil';
+import { existeEnPublico } from '@/lib/archivos';
+
+const hayCv = existeEnPublico(identidad.cv);
+const accion = contacto.endpointFormulario ?? `mailto:${contacto.email}`;
+const metodo = contacto.endpointFormulario ? 'POST' : 'GET';
+
+const datos = [
+  ...(contacto.telefono
+    ? [
+        {
+          icono: 'telefono' as const,
+          etiqueta: 'Teléfono',
+          valor: contacto.telefono,
+          href: `tel:${contacto.telefono.replace(/[^\d+]/g, '')}`,
+          copiable: true,
+        },
+      ]
+    : []),
+  {
+    icono: 'ubicacion' as const,
+    etiqueta: 'Ubicación',
+    valor: contacto.ubicacion,
+    href: null,
+    copiable: false,
+  },
+];
+---
+
+<Seccion id="contacto" antetitulo="Hablemos" titulo={contacto.titulo} subtitulo={contacto.subtitulo}>
+  <div class="contacto">
+    {/* ── Columna de datos ──────────────────────────────────────────── */}
+    <div class="contacto__datos">
+      <p class="contacto__intro" data-revelar="izquierda">{contacto.intro}</p>
+
+      <ul class="datos" role="list">
+        {
+          datos.map((d, i) => (
+            <li
+              class="dato vidrio vidrio--interactivo"
+              data-brillo
+              data-revelar="izquierda"
+              style={`--retardo: ${i * 80}ms`}
+            >
+              <span class="dato__icono">
+                <Icon nombre={d.icono} tam="1.15rem" />
+              </span>
+
+              <span class="dato__texto">
+                <span class="dato__etiqueta">{d.etiqueta}</span>
+                {d.href ? (
+                  <a class="dato__valor enlace-sub" href={d.href}>
+                    {d.valor}
+                  </a>
+                ) : (
+                  <span class="dato__valor">{d.valor}</span>
+                )}
+              </span>
+
+              {d.copiable && (
+                <button
+                  class="icono-boton dato__copiar"
+                  type="button"
+                  data-copiar={d.valor}
+                  aria-label={`Copiar ${d.etiqueta.toLowerCase()} al portapapeles`}
+                >
+                  <Icon nombre="copiar" tam="1rem" />
+                </button>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        hayCv && (
+          <Boton href={identidad.cv!} variante="secundario" icono="descargar" externo>
+            Descargar mi CV
+          </Boton>
+        )
+      }
+    </div>
+
+    {/* ── Formulario ────────────────────────────────────────────────── */}
+    <form
+      class="formulario vidrio vidrio--alto"
+      action={accion}
+      method={metodo}
+      data-formulario
+      data-endpoint={contacto.endpointFormulario ?? ''}
+      data-correo={contacto.email}
+      data-revelar="derecha"
+      novalidate
+    >
+      <div class="formulario__fila">
+        <div class="campo">
+          <label class="campo__etiqueta" for="c-nombre">
+            Nombre <span class="campo__requerido" aria-hidden="true">*</span>
+          </label>
+          <input
+            class="campo__control"
+            id="c-nombre"
+            name="nombre"
+            type="text"
+            autocomplete="name"
+            placeholder="Tu nombre"
+            required
+            maxlength="80"
+          />
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="c-email">
+            Correo <span class="campo__requerido" aria-hidden="true">*</span>
+          </label>
+          <input
+            class="campo__control"
+            id="c-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="tucorreo@ejemplo.com"
+            required
+            maxlength="120"
+          />
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="c-asunto">Asunto</label>
+        <input
+          class="campo__control"
+          id="c-asunto"
+          name="asunto"
+          type="text"
+          placeholder="¿De qué se trata?"
+          maxlength="120"
+        />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="c-mensaje">
+          Mensaje <span class="campo__requerido" aria-hidden="true">*</span>
+        </label>
+        <textarea
+          class="campo__control"
+          id="c-mensaje"
+          name="mensaje"
+          placeholder="Cuéntame en qué puedo ayudarte…"
+          required
+          maxlength="2000"></textarea>
+        <p class="campo__ayuda">
+          <span data-contador>0</span> / 2000 caracteres
+        </p>
+      </div>
+
+      {/* Trampa antispam: los bots rellenan todos los campos, las personas no
+          ven este. Si llega con contenido, descartamos el envío. */}
+      <div class="trampa" aria-hidden="true">
+        <label for="c-web">No rellenar</label>
+        <input id="c-web" name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <Boton tipo="submit" variante="primario" iconoDerecha="enviar" bloque>
+        Enviar mensaje
+      </Boton>
+
+      {/* `role="status"` hace que el lector de pantalla lea el resultado sin
+          robar el foco al usuario. */}
+      <p class="aviso" role="status" data-aviso hidden></p>
+
+      <p class="campo__ayuda formulario__nota">
+        Los campos marcados con <span class="campo__requerido">*</span> son obligatorios.
+      </p>
+    </form>
+  </div>
+</Seccion>
+
+<style>
+  .contacto {
+    display: grid;
+    gap: var(--e-5);
+    align-items: start;
+  }
+
+  /* ── Datos ─────────────────────────────────────────────────────────── */
+
+  .contacto__datos {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--e-4);
+  }
+
+  .contacto__intro {
+    max-width: 44ch;
+    font-size: var(--ts-md);
+    color: var(--t-normal);
+  }
+
+  .datos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dato {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    padding: var(--e-3) var(--e-4);
+  }
+
+  .dato__icono {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex-shrink: 0;
+    border-radius: var(--r-md);
+    border: 1px solid rgb(var(--rgb-acento) / 0.28);
+    background: rgb(var(--rgb-acento) / 0.12);
+    color: var(--c-acento-claro);
+    transition: transform var(--d-normal) var(--cv-rebote);
+  }
+
+  .dato:hover .dato__icono {
+    transform: scale(1.08) rotate(-6deg);
+  }
+
+  .dato__texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dato__etiqueta {
+    font-size: var(--ts-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--t-tenue);
+  }
+
+  .dato__valor {
+    font-size: var(--ts-base);
+    color: var(--t-fuerte);
+    /* Un correo largo se parte en vez de desbordar la tarjeta. */
+    overflow-wrap: anywhere;
+  }
+
+  .dato__copiar {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+  }
+
+  /* Confirmación tras copiar: el botón se pone verde un instante.
+     La clase la añade y retira `interacciones.ts`. */
+  .dato__copiar.copiado {
+    color: var(--c-acento-claro);
+    border-color: rgb(var(--rgb-acento) / 0.6);
+    background: rgb(var(--rgb-acento) / 0.18);
+  }
+
+  /* ── Formulario ────────────────────────────────────────────────────── */
+
+  .formulario {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-4);
+    padding: clamp(1.35rem, 3.5vw, 2.25rem);
+  }
+
+  .formulario__fila {
+    display: grid;
+    gap: var(--e-4);
+  }
+
+  .formulario__nota {
+    margin-top: calc(var(--e-2) * -1);
+  }
+
+  /* La trampa antispam se saca de la pantalla en lugar de ocultarla con
+     `display:none`: algunos bots detectan y evitan lo que está oculto así. */
+  .trampa {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  @media (min-width: 34rem) {
+    .formulario__fila {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 58rem) {
+    .contacto {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.1fr);
+      gap: var(--e-6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dato:hover .dato__icono {
+      transform: none;
+    }
+  }
+</style>

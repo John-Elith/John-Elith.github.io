@@ -1,0 +1,191 @@
+---
+/**
+ * Base — el esqueleto HTML de todas las páginas.
+ *
+ * Concentra todo lo que hace que el sitio se encuentre y se comparta bien:
+ * metadatos, URL canónica, Open Graph, Twitter Card y datos estructurados
+ * JSON-LD. Cualquier página nueva que use este layout los hereda.
+ */
+import '@fontsource-variable/outfit';
+import '@fontsource-variable/inter';
+import '@/styles/global.css';
+
+import Fondo from '@/components/Fondo.astro';
+import Navegacion from '@/components/Navegacion.astro';
+import Pie from '@/components/Pie.astro';
+import { identidad, seo, contacto, redes, habilidades } from '@/data/perfil';
+import { existeEnPublico } from '@/lib/archivos';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  /** Ruta a la imagen de compartir, relativa a la raíz del sitio. */
+  imagen?: string;
+  /** Pide a los buscadores que no indexen esta página (p. ej. un borrador). */
+  noIndexar?: boolean;
+}
+
+const {
+  titulo = seo.titulo,
+  descripcion = seo.descripcion,
+  imagen = seo.imagenCompartir,
+  noIndexar = false,
+} = Astro.props;
+
+/* Las redes sociales exigen URLs absolutas: un `/og.png` relativo se ignora
+   y el enlace se comparte sin miniatura. `Astro.site` sale de astro.config. */
+const base = Astro.site ?? new URL('http://localhost:4321');
+const canonica = new URL(Astro.url.pathname, base).href;
+const imagenAbsoluta = new URL(imagen, base).href;
+
+/* Google penaliza los datos estructurados que apuntan a imágenes que no
+   existen, así que hasta que subas tu retrato usamos la imagen de compartir. */
+const imagenPersona = existeEnPublico(identidad.foto)
+  ? new URL(identidad.foto, base).href
+  : imagenAbsoluta;
+
+/* ── Datos estructurados ──────────────────────────────────────────────
+   Le dicen a Google explícitamente quién eres. Es lo que habilita el panel
+   de conocimiento y los resultados enriquecidos al buscar tu nombre.      */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': `${base.origin}/#persona`,
+      name: identidad.nombre,
+      jobTitle: identidad.titular,
+      description: seo.descripcion,
+      url: base.origin,
+      image: imagenPersona,
+      email: `mailto:${contacto.email}`,
+      ...(contacto.telefono ? { telephone: contacto.telefono } : {}),
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: identidad.ubicacion,
+      },
+      knowsAbout: habilidades.flatMap((g) => g.items),
+      sameAs: redes.items.map((r) => r.url),
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${base.origin}/#sitio`,
+      url: base.origin,
+      name: seo.titulo,
+      description: seo.descripcion,
+      inLanguage: seo.idioma,
+      publisher: { '@id': `${base.origin}/#persona` },
+    },
+    {
+      '@type': 'ProfilePage',
+      '@id': canonica,
+      url: canonica,
+      name: titulo,
+      about: { '@id': `${base.origin}/#persona` },
+      inLanguage: seo.idioma,
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={seo.idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* ── Básicos ─────────────────────────────────────────────────── */}
+    <title>{titulo}</title>
+    <meta name="description" content={descripcion} />
+    <meta name="keywords" content={seo.palabrasClave.join(', ')} />
+    <meta name="author" content={identidad.nombre} />
+    <link rel="canonical" href={canonica} />
+    <meta
+      name="robots"
+      content={noIndexar ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'}
+    />
+
+    {/* ── Apariencia en el navegador ──────────────────────────────── */}
+    <meta name="theme-color" content={seo.colorTema} />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    {/* ── Open Graph: WhatsApp, LinkedIn, Facebook, Telegram, Slack ── */}
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={identidad.nombre} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:locale" content={seo.locale} />
+    <meta property="og:image" content={imagenAbsoluta} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content={seo.imagenCompartirAlt} />
+    <meta property="profile:first_name" content={identidad.nombre.split(' ')[0]} />
+    <meta property="profile:last_name" content={identidad.nombre.split(' ').slice(1).join(' ')} />
+
+    {/* ── Twitter / X ─────────────────────────────────────────────── */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descripcion} />
+    <meta name="twitter:image" content={imagenAbsoluta} />
+    <meta name="twitter:image:alt" content={seo.imagenCompartirAlt} />
+    {seo.usuarioTwitter && <meta name="twitter:creator" content={`@${seo.usuarioTwitter}`} />}
+
+    {/* ── Datos estructurados ─────────────────────────────────────── */}
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(jsonLd)}
+    />
+
+    {/* Marca el documento como "con JS" antes del primer pintado. Las
+        animaciones de aparición dependen de esta clase: sin ella, todo el
+        contenido se muestra directamente en lugar de quedar invisible
+        esperando a un script que quizá nunca llegue. */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+
+  <body>
+    <Fondo />
+    <Navegacion />
+
+    <div class="marco">
+      <main id="contenido" class="contenedor">
+        <slot />
+      </main>
+      <Pie />
+    </div>
+
+    <script>
+      import '@/scripts/interacciones';
+    </script>
+
+    <style>
+      /* Deja hueco al carril lateral fijo en escritorio. En móvil el carril
+         es un panel flotante y no ocupa espacio en el flujo. */
+      .marco {
+        position: relative;
+        z-index: var(--z-contenido);
+        display: flex;
+        flex-direction: column;
+        min-height: 100svh;
+      }
+
+      main {
+        flex: 1;
+      }
+
+      @media (min-width: 1024px) {
+        .marco {
+          padding-inline-start: var(--ancho-carril);
+        }
+      }
+    </style>
+  </body>
+</html>

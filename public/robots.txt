@@ -1,0 +1,7 @@
+# Se permite el rastreo completo del sitio.
+User-agent: *
+Allow: /
+
+# Cambia el dominio cuando publiques. Debe coincidir con `site` en
+# astro.config.mjs — el sitemap lo genera @astrojs/sitemap durante el build.
+Sitemap: https://john-elith.github.io/sitemap-index.xml

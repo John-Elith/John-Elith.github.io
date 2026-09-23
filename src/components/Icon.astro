@@ -1,0 +1,54 @@
+---
+/**
+ * Icon — inserta un SVG del registro `src/lib/iconos.ts`.
+ *
+ * Por defecto el icono es decorativo (`aria-hidden`), porque casi siempre
+ * acompaña a un texto que ya dice lo mismo. Si el icono es la ÚNICA
+ * información (p. ej. un botón solo con icono), pasa `titulo` para que los
+ * lectores de pantalla lo anuncien.
+ *
+ *   <Icon nombre="github" />
+ *   <Icon nombre="github" titulo="Abrir GitHub" tam="1.5rem" />
+ */
+import { iconos, type NombreIcono } from '@/lib/iconos';
+
+interface Props {
+  nombre: NombreIcono;
+  /** Tamaño en cualquier unidad CSS. Por defecto hereda del texto (1.25em). */
+  tam?: string;
+  /** Grosor del trazo. Solo afecta a los iconos de contorno. */
+  grosor?: number;
+  /** Si se indica, el icono deja de ser decorativo y se anuncia con este texto. */
+  titulo?: string;
+  class?: string;
+}
+
+const { nombre, tam, grosor = 1.75, titulo, class: clase = '' } = Astro.props;
+
+const icono = iconos[nombre];
+
+// Un nombre mal escrito debe fallar en el build, no dejar un hueco silencioso.
+if (!icono) {
+  throw new Error(
+    `Icono desconocido: "${nombre}". Disponibles: ${Object.keys(iconos).join(', ')}`
+  );
+}
+
+const esTrazo = icono.tipo === 'trazo';
+const accesible = Boolean(titulo);
+---
+
+<svg
+  class:list={['icono', clase]}
+  viewBox="0 0 24 24"
+  fill={esTrazo ? 'none' : 'currentColor'}
+  stroke={esTrazo ? 'currentColor' : undefined}
+  stroke-width={esTrazo ? grosor : undefined}
+  stroke-linecap={esTrazo ? 'round' : undefined}
+  stroke-linejoin={esTrazo ? 'round' : undefined}
+  role={accesible ? 'img' : undefined}
+  aria-hidden={accesible ? undefined : 'true'}
+  aria-label={titulo}
+  style={tam ? `--icono-tam: ${tam}` : undefined}
+  set:html={icono.cuerpo}
+/>

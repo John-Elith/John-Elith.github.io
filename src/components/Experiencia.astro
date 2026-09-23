@@ -1,0 +1,281 @@
+---
+/**
+ * Experiencia — línea de tiempo vertical.
+ *
+ * Se marca con <ol> porque el orden (de más reciente a más antiguo) es
+ * información, no decoración: un lector de pantalla debe anunciarlo.
+ */
+import Seccion from './Seccion.astro';
+import Icon from './Icon.astro';
+import { experiencia } from '@/data/perfil';
+---
+
+<Seccion
+  id="experiencia"
+  antetitulo="Trayectoria"
+  titulo={experiencia.titulo}
+  subtitulo={experiencia.subtitulo}
+>
+  <ol class="linea" role="list">
+    {
+      experiencia.items.map((puesto, i) => {
+        const actual = /actualidad|presente|hoy/i.test(puesto.hasta);
+        return (
+          <li class="linea__item" data-revelar="arriba" style={`--retardo: ${i * 110}ms`}>
+            <span class:list={['linea__nodo', actual && 'linea__nodo--activo']} aria-hidden="true" />
+
+            <article class="puesto vidrio vidrio--interactivo" data-brillo>
+              <header class="puesto__cabecera">
+                <div class="puesto__identidad">
+                  <h3 class="puesto__cargo">{puesto.puesto}</h3>
+                  <p class="puesto__empresa">
+                    <Icon nombre="maletin" tam="0.95rem" />
+                    {puesto.empresa}
+                  </p>
+                </div>
+
+                <p class:list={['puesto__fechas', actual && 'puesto__fechas--activo']}>
+                  <Icon nombre="calendario" tam="0.9rem" />
+                  <span>
+                    {puesto.desde} — {puesto.hasta}
+                  </span>
+                </p>
+              </header>
+
+              <ul class="puesto__meta" role="list">
+                <li>
+                  <Icon nombre="ubicacion" tam="0.9rem" />
+                  {puesto.ubicacion}
+                </li>
+                {puesto.modalidad && (
+                  <li>
+                    <Icon nombre="reloj" tam="0.9rem" />
+                    {puesto.modalidad}
+                  </li>
+                )}
+              </ul>
+
+              <p class="puesto__descripcion">{puesto.descripcion}</p>
+
+              <ul class="logros" role="list">
+                {puesto.logros.map((logro) => (
+                  <li class="logro">
+                    <Icon nombre="check" tam="1rem" class="logro__check" />
+                    <span>{logro}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <ul class="puesto__tecnologias" role="list" aria-label="Tecnologías utilizadas">
+                {puesto.tecnologias.map((tec) => (
+                  <li class="etiqueta">{tec}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        );
+      })
+    }
+  </ol>
+</Seccion>
+
+<style>
+  .linea {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-5);
+    margin: 0;
+    padding: 0 0 0 var(--e-6);
+    list-style: none;
+  }
+
+  /* El raíl vertical. Se desvanece por arriba y por abajo para que no
+     parezca cortado a cuchillo. */
+  .linea::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.6rem 1rem;
+    inset-inline-start: 0.44rem;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--v-borde-vivo) 8%,
+      var(--v-borde-vivo) 88%,
+      transparent
+    );
+  }
+
+  .linea__item {
+    position: relative;
+  }
+
+  .linea__nodo {
+    position: absolute;
+    inset-block-start: 1.9rem;
+    inset-inline-start: calc(var(--e-6) * -1 + 0.11rem);
+    width: 0.72rem;
+    height: 0.72rem;
+    border-radius: 50%;
+    background: var(--c-pizarra);
+    border: 2px solid var(--c-musgo);
+    transition:
+      background-color var(--tr-base),
+      border-color var(--tr-base),
+      box-shadow var(--tr-base);
+  }
+
+  /* El puesto actual lleva el nodo encendido y latiendo. */
+  .linea__nodo--activo {
+    background: var(--c-acento-claro);
+    border-color: var(--c-acento);
+    box-shadow: 0 0 0 4px rgb(var(--rgb-acento) / 0.18);
+  }
+
+  .linea__nodo--activo::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: var(--c-acento-claro);
+    animation: latido 2.6s var(--cv-suave) infinite;
+  }
+
+  .linea__item:hover .linea__nodo {
+    background: var(--c-acento-claro);
+    border-color: var(--c-acento);
+  }
+
+  /* ── Tarjeta ───────────────────────────────────────────────────────── */
+
+  .puesto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-3);
+    padding: clamp(1.25rem, 3vw, 1.9rem);
+  }
+
+  .puesto__cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--e-2) var(--e-4);
+  }
+
+  .puesto__identidad {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-1);
+    min-width: 0;
+  }
+
+  .puesto__cargo {
+    font-size: var(--ts-lg);
+  }
+
+  .puesto__empresa {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-2);
+    font-size: var(--ts-base);
+    font-weight: 500;
+    color: var(--c-acento-claro);
+  }
+
+  .puesto__fechas {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-2);
+    padding: 0.3em 0.8em;
+    border-radius: var(--r-pastilla);
+    border: 1px solid var(--v-borde);
+    background: rgb(var(--rgb-hueso) / 0.04);
+    font-family: var(--f-mono);
+    font-size: var(--ts-xs);
+    color: var(--t-suave);
+    white-space: nowrap;
+  }
+
+  .puesto__fechas--activo {
+    border-color: rgb(var(--rgb-acento) / 0.4);
+    background: rgb(var(--rgb-acento) / 0.12);
+    color: var(--c-acento-claro);
+  }
+
+  .puesto__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2) var(--e-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--ts-sm);
+    color: var(--t-tenue);
+  }
+
+  .puesto__meta li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-1);
+  }
+
+  .puesto__descripcion {
+    color: var(--t-normal);
+    max-width: 68ch;
+  }
+
+  /* ── Logros ────────────────────────────────────────────────────────── */
+
+  .logros {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-2);
+    margin: var(--e-1) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .logro {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e-3);
+    font-size: var(--ts-sm);
+    color: var(--t-normal);
+    max-width: 72ch;
+  }
+
+  /* Igual que en la navegación: el <svg> viene del componente Icon y no
+     lleva el atributo de ámbito, así que se selecciona con :global(). */
+  .logro :global(.logro__check) {
+    flex-shrink: 0;
+    /* Alinea el icono con la primera línea del texto, no con el bloque. */
+    margin-top: 0.25em;
+    padding: 0.1rem;
+    border-radius: 50%;
+    border: 1px solid rgb(var(--rgb-acento) / 0.35);
+    background: rgb(var(--rgb-acento) / 0.14);
+    color: var(--c-acento-claro);
+    transition: transform var(--d-rapida) var(--cv-rebote);
+  }
+
+  .logro:hover :global(.logro__check) {
+    transform: scale(1.15);
+  }
+
+  .puesto__tecnologias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e-2);
+    margin: var(--e-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .linea__nodo--activo::after {
+      animation: none;
+    }
+  }
+</style>

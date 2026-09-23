@@ -1,0 +1,512 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   COMPONENTES — cristal, botones, etiquetas, tarjetas, formularios
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────  CRISTAL  ─────────────────────────────────
+   La base del glassmorphism. Cuatro capas superpuestas producen la
+   sensación de vidrio: fondo translúcido, desenfoque de lo que hay detrás,
+   borde claro y un realce interior en el canto superior.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.vidrio {
+  position: relative;
+  background: var(--v-fondo);
+  border: 1px solid var(--v-borde);
+  border-radius: var(--r-lg);
+  box-shadow: var(--s-media), var(--v-realce);
+  /* `isolation` mantiene los pseudo-elementos de brillo dentro de la tarjeta. */
+  isolation: isolate;
+}
+
+/* El desenfoque va aparte: es la propiedad más cara de la página y hay
+   navegadores (y modos de ahorro de batería) que no la soportan. Sin ella
+   el panel sigue siendo legible, solo un poco más plano. */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .vidrio {
+    -webkit-backdrop-filter: blur(var(--v-desenfoque)) saturate(150%);
+    backdrop-filter: blur(var(--v-desenfoque)) saturate(150%);
+  }
+}
+
+/* Sin soporte de desenfoque, compensamos con un fondo más opaco. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vidrio {
+    background: rgb(28 33 31 / 0.82);
+  }
+}
+
+.vidrio--alto {
+  background: var(--v-fondo-medio);
+  --v-desenfoque: var(--v-desenfoque-alto);
+  box-shadow: var(--s-alta), var(--v-realce);
+}
+
+.vidrio--sutil {
+  background: rgb(var(--rgb-hueso) / 0.03);
+  box-shadow: var(--v-realce);
+}
+
+.vidrio--xl {
+  border-radius: var(--r-2xl);
+}
+
+/* ── Cristal interactivo ───────────────────────────────────────────────
+   Dos efectos que siguen al cursor mediante las variables --mx/--my, que
+   escribe `interacciones.ts` en cada movimiento del ratón:
+     ::before → foco de luz difuso sobre la superficie
+     ::after  → borde iluminado (truco de máscara para pintar solo el marco)
+   Ambos son `pointer-events: none` para no robar clics al contenido.      */
+
+.vidrio--interactivo {
+  --mx: 50%;
+  --my: 50%;
+  cursor: default;
+  transition:
+    transform var(--d-normal) var(--cv-salida),
+    border-color var(--d-normal) var(--cv-salida),
+    box-shadow var(--d-normal) var(--cv-salida),
+    background-color var(--d-normal) var(--cv-salida);
+}
+
+.vidrio--interactivo::before,
+.vidrio--interactivo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--d-normal) var(--cv-salida);
+}
+
+.vidrio--interactivo::before {
+  z-index: -1;
+  background: radial-gradient(
+    26rem circle at var(--mx) var(--my),
+    rgb(var(--rgb-hueso) / 0.09),
+    transparent 60%
+  );
+}
+
+.vidrio--interactivo::after {
+  z-index: 1;
+  padding: 1px;
+  background: radial-gradient(
+    18rem circle at var(--mx) var(--my),
+    rgb(var(--rgb-acento) / 0.7),
+    rgb(var(--rgb-hueso) / 0.16) 45%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.vidrio--interactivo:hover,
+.vidrio--interactivo:focus-within {
+  transform: translateY(-4px);
+  background: var(--v-fondo-medio);
+  box-shadow: var(--s-alta), var(--v-realce);
+}
+
+.vidrio--interactivo:hover::before,
+.vidrio--interactivo:hover::after,
+.vidrio--interactivo:focus-within::before,
+.vidrio--interactivo:focus-within::after {
+  opacity: 1;
+}
+
+/* En pantallas táctiles no existe el hover: el navegador lo simula y deja la
+   tarjeta "pegada" en estado activo tras el toque. Lo desactivamos. */
+@media (hover: none) {
+  .vidrio--interactivo:hover {
+    transform: none;
+  }
+}
+
+/* ─────────────────────────────  BOTONES  ────────────────────────────── */
+
+.boton {
+  --boton-alto: 2.9rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  min-height: var(--boton-alto);
+  padding: 0 var(--e-5);
+  border-radius: var(--r-pastilla);
+  font-family: var(--f-titulo);
+  font-size: var(--ts-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--d-rapida) var(--cv-salida),
+    box-shadow var(--d-rapida) var(--cv-salida),
+    background-color var(--d-rapida) var(--cv-salida),
+    border-color var(--d-rapida) var(--cv-salida),
+    color var(--d-rapida) var(--cv-salida);
+}
+
+.boton:hover {
+  transform: translateY(-2px);
+}
+
+/* El botón "cede" bajo el dedo/cursor. Es el detalle que más hace sentir
+   que la interfaz responde. */
+.boton:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: var(--d-instante);
+}
+
+.boton .icono {
+  transition: transform var(--d-rapida) var(--cv-rebote);
+}
+
+.boton:hover .icono--desplaza {
+  transform: translateX(3px);
+}
+
+.boton:hover .icono--baja {
+  transform: translateY(2px);
+}
+
+/* Variante principal: degradado de acento y un destello que barre al pasar. */
+.boton--primario {
+  background: linear-gradient(135deg, var(--c-acento-claro), var(--c-acento) 55%, var(--c-acento-oscuro));
+  color: var(--c-vacio);
+  box-shadow: var(--s-acento), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.boton--primario::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.45), transparent 80%);
+  transform: translateX(-130%);
+  transition: transform var(--d-lenta) var(--cv-salida);
+}
+
+.boton--primario:hover {
+  box-shadow: 0 12px 40px -8px rgb(var(--rgb-acento) / 0.65), inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+.boton--primario:hover::before {
+  transform: translateX(130%);
+}
+
+/* Variante secundaria: cristal. */
+.boton--secundario {
+  background: var(--v-fondo-medio);
+  border: 1px solid var(--v-borde);
+  color: var(--t-fuerte);
+  box-shadow: var(--v-realce);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .boton--secundario {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+.boton--secundario:hover {
+  background: var(--v-fondo-alto);
+  border-color: var(--v-borde-vivo);
+  box-shadow: var(--s-media), var(--v-realce);
+}
+
+/* Variante fantasma: solo texto, para acciones terciarias. */
+.boton--fantasma {
+  padding-inline: var(--e-3);
+  color: var(--t-suave);
+}
+
+.boton--fantasma:hover {
+  color: var(--t-fuerte);
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+.boton[disabled],
+.boton[aria-disabled='true'] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Onda de clic (ripple). El <span> lo inserta el JS en la posición exacta
+   del puntero; aquí solo describimos cómo se expande y desvanece. */
+.onda {
+  position: absolute;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.4);
+  transform: scale(0);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: onda-expandir var(--d-lenta) var(--cv-salida) forwards;
+}
+
+.boton--primario .onda {
+  background: rgb(var(--rgb-vacio) / 0.28);
+}
+
+/* ─────────────────────────────  ETIQUETAS  ────────────────────────────── */
+
+/* Chip de tecnología ("C#", "SQL Server"...). */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-1);
+  padding: 0.28em 0.85em;
+  border-radius: var(--r-pastilla);
+  border: 1px solid var(--v-borde);
+  background: rgb(var(--rgb-hueso) / 0.05);
+  font-family: var(--f-mono);
+  font-size: var(--ts-xs);
+  letter-spacing: 0.01em;
+  color: var(--t-suave);
+  transition:
+    color var(--tr-base),
+    border-color var(--tr-base),
+    background-color var(--tr-base),
+    transform var(--tr-base);
+}
+
+.etiqueta:hover {
+  color: var(--c-acento-claro);
+  border-color: rgb(var(--rgb-acento) / 0.45);
+  background: rgb(var(--rgb-acento) / 0.1);
+  transform: translateY(-2px);
+}
+
+/* Píldora de estado con punto latiendo ("Disponible para proyectos"). */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  padding: 0.35em 0.95em 0.35em 0.75em;
+  border-radius: var(--r-pastilla);
+  border: 1px solid rgb(var(--rgb-acento) / 0.35);
+  background: rgb(var(--rgb-acento) / 0.12);
+  font-size: var(--ts-xs);
+  font-weight: 500;
+  color: var(--c-acento-claro);
+}
+
+.estado__punto {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--c-acento-claro);
+  flex-shrink: 0;
+}
+
+.estado__punto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: latido 2.4s var(--cv-suave) infinite;
+}
+
+/* Título pequeño en versalitas que encabeza cada sección. */
+.antetitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  font-family: var(--f-mono);
+  font-size: var(--ts-xs);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-acento-claro);
+}
+
+.antetitulo::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-acento));
+}
+
+/* ─────────────────────────────  ICONOS  ────────────────────────────── */
+
+.icono {
+  flex-shrink: 0;
+  width: var(--icono-tam, 1.25em);
+  height: var(--icono-tam, 1.25em);
+}
+
+/* Botón circular que solo contiene un icono. */
+.icono-boton {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-pastilla);
+  border: 1px solid var(--v-borde);
+  background: var(--v-fondo);
+  color: var(--t-suave);
+  overflow: hidden;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--d-rapida) var(--cv-rebote),
+    color var(--tr-base),
+    border-color var(--tr-base),
+    background-color var(--tr-base),
+    box-shadow var(--tr-base);
+}
+
+.icono-boton:hover {
+  color: var(--c-acento-claro);
+  border-color: rgb(var(--rgb-acento) / 0.5);
+  background: rgb(var(--rgb-acento) / 0.12);
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: var(--s-acento);
+}
+
+.icono-boton:active {
+  transform: translateY(0) scale(0.94);
+  transition-duration: var(--d-instante);
+}
+
+/* ─────────────────────────────  SECCIONES  ────────────────────────────── */
+
+.seccion {
+  position: relative;
+  padding-block: var(--e-seccion);
+  /* Compensa la barra fija al saltar desde el menú. */
+  scroll-margin-top: calc(var(--alto-barra) + var(--e-2));
+}
+
+.seccion__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+  margin-bottom: var(--e-7);
+  max-width: 46rem;
+}
+
+.seccion__titulo {
+  font-size: var(--ts-2xl);
+}
+
+.seccion__subtitulo {
+  font-size: var(--ts-md);
+  color: var(--t-suave);
+}
+
+/* Línea divisoria que se desvanece por los extremos. */
+.divisor {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--v-borde) 25%, var(--v-borde) 75%, transparent);
+}
+
+/* ─────────────────────────────  FORMULARIO  ────────────────────────────── */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-2);
+}
+
+.campo__etiqueta {
+  font-size: var(--ts-sm);
+  font-weight: 500;
+  color: var(--t-normal);
+}
+
+.campo__requerido {
+  color: var(--c-acento-claro);
+}
+
+.campo__control {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--v-borde);
+  background: rgb(var(--rgb-vacio) / 0.28);
+  color: var(--t-fuerte);
+  font-size: var(--ts-base);
+  transition:
+    border-color var(--tr-base),
+    background-color var(--tr-base),
+    box-shadow var(--tr-base);
+}
+
+.campo__control::placeholder {
+  color: var(--t-tenue);
+}
+
+.campo__control:hover {
+  border-color: var(--v-borde-vivo);
+}
+
+.campo__control:focus {
+  outline: none;
+  border-color: var(--c-acento);
+  background: rgb(var(--rgb-vacio) / 0.4);
+  box-shadow: 0 0 0 3px rgb(var(--rgb-acento) / 0.18);
+}
+
+/* Solo marcamos el campo en rojo si el usuario ya intentó enviar el
+   formulario — avisar antes de tiempo es hostil. */
+.formulario[data-validado='true'] .campo__control:invalid {
+  border-color: #d97070;
+  box-shadow: 0 0 0 3px rgb(217 112 112 / 0.16);
+}
+
+textarea.campo__control {
+  min-height: 8.5rem;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.campo__ayuda {
+  font-size: var(--ts-xs);
+  color: var(--t-tenue);
+}
+
+/* Aviso de resultado tras enviar. */
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-3);
+  padding: var(--e-3) var(--e-4);
+  border-radius: var(--r-md);
+  font-size: var(--ts-sm);
+  border: 1px solid transparent;
+}
+
+.aviso[hidden] {
+  display: none;
+}
+
+.aviso--ok {
+  border-color: rgb(var(--rgb-acento) / 0.4);
+  background: rgb(var(--rgb-acento) / 0.12);
+  color: var(--c-acento-claro);
+}
+
+.aviso--error {
+  border-color: rgb(217 112 112 / 0.4);
+  background: rgb(217 112 112 / 0.12);
+  color: #e79a9a;
+}
