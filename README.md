@@ -167,6 +167,25 @@ el texto de las secciones superiores).
 
 ## Publicar
 
+### GitHub Pages (lo que usa este repositorio)
+
+Ya está configurado. El repositorio se llama `John-Elith.github.io`, así que
+la web se sirve en la raíz del dominio:
+
+    https://john-elith.github.io
+
+Cada envío a `main` dispara `.github/workflows/desplegar.yml`, que compila el
+proyecto en los servidores de GitHub y lo publica. No hay que subir `dist/`:
+sigue ignorada.
+
+Requisito, una sola vez: en **Settings → Pages**, poner «Source» en
+**GitHub Actions**.
+
+Para ver cómo va un despliegue, o relanzarlo a mano, está la pestaña
+**Actions** del repositorio.
+
+### Otros servicios
+
 El sitio es estático, así que sirve cualquier hosting. Los tres gratuitos más
 cómodos, todos con HTTPS y dominio propio incluidos:
 
