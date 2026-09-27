@@ -26,7 +26,9 @@ import { formatoSimple } from '@/lib/texto';
             data-revelar="derecha"
             style={`--retardo: ${i * 90}ms`}
           >
-            <span class="cifra__valor">{e.valor}</span>
+            <span class="cifra__valor">
+              {e.icono ? <Icon nombre={e.icono} tam="1em" class="cifra__icono" /> : e.valor}
+            </span>
             <span class="cifra__etiqueta">{e.etiqueta}</span>
           </div>
         ))
@@ -85,10 +87,16 @@ import { formatoSimple } from '@/lib/texto';
     font-size: var(--ts-md);
   }
 
+  /* Dos columnas en móvil y tableta. Si el número de cifras es impar, la
+     última ocupa la fila entera en vez de quedarse sola con un hueco al lado. */
   .sobre__cifras {
     display: grid;
     gap: var(--e-3);
-    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cifra:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .cifra {
@@ -110,6 +118,12 @@ import { formatoSimple } from '@/lib/texto';
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* El valor pinta el texto con un degradado recortado y color transparente;
+     un icono en su lugar necesita color propio o no se vería. */
+  .cifra__valor :global(.cifra__icono) {
+    color: var(--c-acento-claro);
   }
 
   .cifra__etiqueta {
@@ -186,6 +200,10 @@ import { formatoSimple } from '@/lib/texto';
 
     .sobre__cifras {
       grid-template-columns: 1fr;
+    }
+
+    .cifra:last-child:nth-child(odd) {
+      grid-column: auto;
     }
   }
 </style>

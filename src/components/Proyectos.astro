@@ -35,7 +35,7 @@ import { proyectos } from '@/data/perfil';
               {p.imagen ? (
                 <img
                   src={p.imagen}
-                  alt={`Captura del proyecto ${p.nombre}`}
+                  alt={`Portada del proyecto ${p.nombre}`}
                   loading="lazy"
                   decoding="async"
                   width="640"
@@ -87,8 +87,8 @@ import { proyectos } from '@/data/perfil';
                       rel="noopener noreferrer"
                     >
                       <Icon nombre="enlace-externo" tam="1rem" />
-                      <span>Ver demo</span>
-                      <span class="oculto-visual">de {p.nombre} (pestaña nueva)</span>
+                      <span>{p.textoDemo ?? 'Ver demo'}</span>
+                      <span class="oculto-visual">{p.nombre} (pestaña nueva)</span>
                     </a>
                   )}
                   {p.repo && (
@@ -185,15 +185,17 @@ import { proyectos } from '@/data/perfil';
     padding: 0.25em 0.7em;
     border-radius: var(--r-pastilla);
     border: 1px solid var(--v-borde);
-    background: rgb(var(--rgb-vacio) / 0.6);
+    /* Oscuro y casi opaco: tiene que leerse igual sobre una portada blanca
+       (Kaori, Créditos La Red) que sobre una oscura. */
+    background: rgb(var(--rgb-vacio) / 0.82);
     font-family: var(--f-mono);
     font-size: var(--ts-xs);
-    color: var(--t-suave);
+    color: var(--t-normal);
   }
 
   @supports (backdrop-filter: blur(1px)) {
     .proyecto__anio {
-      background: rgb(var(--rgb-vacio) / 0.4);
+      background: rgb(var(--rgb-vacio) / 0.72);
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }

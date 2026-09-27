@@ -39,7 +39,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  /* `clip` recorta sin convertir el body en contenedor de scroll. */
+  overflow-x: clip;
+}
+
+/* En móvil, `overflow-x` solo en el body no basta: si algo sobresale por la
+   derecha, el navegador ensancha la página, deja arrastrarla de lado y a
+   veces aleja el zoom hasta que parece una web de escritorio en miniatura. */
+html {
+  overflow-x: clip;
 }
 
 /* Bloquea el scroll cuando el menú móvil está abierto. */

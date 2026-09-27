@@ -87,7 +87,11 @@ const hayFoto = existeEnPublico(identidad.foto);
 
       <div class="pie__inferior">
         <p>© {rangoAnios(pie.desde)} {identidad.nombre}. Todos los derechos reservados.</p>
-        <p class="pie__nota">{pie.nota}</p>
+        <p class="pie__nota">
+          {pie.nota}
+          <Icon nombre={pie.notaIcono} tam="1.05em" class="pie__nota-icono" />
+          <span class="oculto-visual">{pie.notaIconoTexto}</span>
+        </p>
       </div>
     </div>
   </div>
@@ -249,7 +253,16 @@ const hayFoto = existeEnPublico(identidad.foto);
     color: var(--t-tenue);
   }
 
+  .pie__nota :global(.pie__nota-icono) {
+    color: var(--c-acento-claro);
+  }
+
+  /* En fila: el reinicio de base.css pinta los <svg> como bloque, y sin esto
+     el icono del café caía en una línea propia. */
   .pie__nota {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
     font-family: var(--f-mono);
   }
 

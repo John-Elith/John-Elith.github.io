@@ -8,7 +8,7 @@
  */
 import Icon from './Icon.astro';
 import Boton from './Boton.astro';
-import { identidad, contacto } from '@/data/perfil';
+import { identidad } from '@/data/perfil';
 import { existeEnPublico } from '@/lib/archivos';
 
 // Los roles se rotan por JS. Mandamos la lista en un atributo de datos y
@@ -44,6 +44,13 @@ const hayCv = existeEnPublico(identidad.cv);
       <p class="hero__roles" data-revelar="arriba" style="--retardo: 160ms">
         <span class="hero__roles-fijo">Especializado en</span>
         <span class="hero__roles-ventana">
+          {/* Moldes invisibles con todos los roles, apilados en la misma celda:
+              la ventana toma el ancho del más largo y no cambia al rotar. Sin
+              ellos, un rol largo no cabía junto a «Especializado en», saltaba
+              a otra línea y empujaba hacia abajo toda la página. */}
+          {roles.map((rol) => (
+            <span class="hero__roles-molde" aria-hidden="true">{rol}</span>
+          ))}
           <span class="hero__roles-item" data-roles={JSON.stringify(roles)}>{roles[0]}</span>
         </span>
       </p>
@@ -72,8 +79,10 @@ const hayCv = existeEnPublico(identidad.cv);
           {identidad.ubicacion}
         </li>
         <li>
-          <Icon nombre="sobre" tam="1rem" />
-          <a class="enlace-sub" href={`mailto:${contacto.email}`}>{contacto.email}</a>
+          {/* Solo el icono: lleva al formulario de la sección Contáctame. */}
+          <a class="hero__meta-correo" href="#contacto" aria-label="Ir a Contáctame">
+            <Icon nombre="sobre" tam="1rem" />
+          </a>
         </li>
       </ul>
     </div>
@@ -159,13 +168,27 @@ const hayCv = existeEnPublico(identidad.cv);
   }
 
   .hero__roles-ventana {
-    display: inline-block;
+    /* Todos los hijos comparten la única celda de la rejilla: el ancho es el
+       del rol más largo, sea cual sea el que se ve. */
+    display: inline-grid;
     position: relative;
     /* Recorta el texto que entra y sale por arriba y por abajo. */
     overflow: hidden;
     /* Alto fijo: sin esto el layout salta cada vez que cambia el texto. */
     height: 1.5em;
     vertical-align: bottom;
+  }
+
+  .hero__roles-molde,
+  .hero__roles-item {
+    grid-area: 1 / 1;
+    justify-self: start;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .hero__roles-molde {
+    visibility: hidden;
   }
 
   .hero__roles-item {
@@ -222,6 +245,25 @@ const hayCv = existeEnPublico(identidad.cv);
 
   .hero__meta :global(.icono) {
     color: var(--c-acento);
+  }
+
+  /* Área de toque cómoda alrededor de un icono de 16 px. */
+  .hero__meta-correo {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    margin: -0.5rem 0;
+    border-radius: var(--r-pastilla);
+    transition: background-color var(--tr-base);
+  }
+
+  .hero__meta-correo:hover {
+    background: rgb(var(--rgb-acento) / 0.14);
+  }
+
+  .hero__meta-correo:hover :global(.icono) {
+    color: var(--c-acento-claro);
   }
 
   /* ── Retrato ───────────────────────────────────────────────────────── */
@@ -328,6 +370,16 @@ const hayCv = existeEnPublico(identidad.cv);
   }
 
   /* ── Escalado ──────────────────────────────────────────────────────── */
+
+  /* En el móvil los botones van uno bajo otro a todo el ancho: dos anchos
+     distintos apilados parecían un diseño de escritorio mal encogido, y un
+     botón ancho es más fácil de pulsar con el pulgar. */
+  @media (max-width: 39.99rem) {
+    .hero__acciones > :global(*) {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+  }
 
   @media (min-width: 40rem) {
     .hero__bajar {

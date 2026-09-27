@@ -145,6 +145,15 @@
   transform: translate3d(26px, 0, 0);
 }
 
+/* En pantallas estrechas no hay sitio a los lados: un elemento que entra
+   desplazado 26 px hacia fuera ensanchaba la página. Ahí entran desde abajo. */
+@media (max-width: 47.99rem) {
+  .js [data-revelar='izquierda'],
+  .js [data-revelar='derecha'] {
+    transform: translate3d(0, 26px, 0);
+  }
+}
+
 .js [data-revelar='escala'] {
   transform: scale(0.96);
 }

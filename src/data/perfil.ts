@@ -107,7 +107,7 @@ export const navegacion = [
 
 export const biografia = {
   titulo: 'Biografía',
-  subtitulo: 'Quién soy y cómo trabajo',
+  subtitulo: '¿Quién soy y cómo trabajo?',
   /** Cada string es un párrafo. Añade o quita los que quieras. */
   parrafos: [
     // TODO: reescribe esto con tu historia real.
@@ -119,11 +119,12 @@ export const biografia = {
    * Datos rápidos que se muestran como estadísticas.
    * Recomendado: 3 o 4 elementos.
    */
+  /** Cada cifra lleva `valor` (texto grande) o `icono` en su lugar. */
   estadisticas: [
     { valor: '5+', etiqueta: 'Años programando' },
-    { valor: '20+', etiqueta: 'Proyectos entregados' },
+    { icono: 'check', etiqueta: 'Proyectos de calidad garantizada' },
     { valor: '12+', etiqueta: 'Tecnologías dominadas' },
-  ],
+  ] as { valor?: string; icono?: NombreIcono; etiqueta: string }[],
 };
 
 /* ─────────────────────────────  5. HABILIDADES  ───────────────────────────── */
@@ -137,7 +138,7 @@ export const habilidades = [
   {
     categoria: 'Frontend',
     icono: 'ventana' as NombreIcono,
-    items: ['HTML5', 'CSS3', 'JavaScript', 'TypeScript', 'Bootstrap', 'Blazor'],
+    items: ['HTML5', 'CSS3', 'JavaScript', 'TypeScript', 'Bootstrap'],
   },
   {
     categoria: 'Datos',
@@ -147,7 +148,7 @@ export const habilidades = [
   {
     categoria: 'Herramientas',
     icono: 'herramienta' as NombreIcono,
-    items: ['Git', 'Visual Studio', 'Docker', 'Azure DevOps', 'Postman'],
+    items: ['Git', 'Visual Studio', 'Docker', 'Postman'],
   },
 ];
 
@@ -159,39 +160,40 @@ export const experiencia = {
   /** Ordena de más reciente a más antiguo. */
   items: [
     {
-      puesto: 'Desarrollador Full Stack',
-      empresa: 'Nombre de la Empresa', // TODO
+      puesto: 'Desarrollador de software independiente',
+      empresa: 'Proyectos propios',
       /** Texto libre: 'Ene 2023', '2023', 'Marzo 2023'... */
-      desde: 'Ene 2023',
+      desde: '2025',
       /** Pon 'Actualidad' si sigues ahí. */
       hasta: 'Actualidad',
-      ubicacion: 'Lima, Perú',
+      ubicacion: 'Colombia',
       /** Tipo de contrato. Pon `null` para ocultarlo. */
-      modalidad: 'Tiempo completo' as string | null,
+      modalidad: 'Independiente' as string | null,
       descripcion:
-        'Desarrollo y mantenimiento de sistemas de gestión internos con .NET y SQL Server.',
+        'Diseño, desarrollo y publico aplicaciones completas, de escritorio y web, que resuelven necesidades concretas de iglesias, contratistas y negocios de crédito.',
       /** Logros concretos. Usa números siempre que puedas — venden mucho más. */
       logros: [
-        'Migré un sistema legacy de WebForms a ASP.NET Core, reduciendo el tiempo de carga en un 60 %.',
-        'Diseñé la API REST que hoy consumen 3 aplicaciones internas.',
-        'Automaticé el proceso de reportería mensual, ahorrando ~20 horas de trabajo manual.',
+        'Creé Coraza, software de proyección para iglesias en C# y WPF (.NET 8): funciona sin internet, se controla desde el móvil por la red local y se distribuye con instalador para Windows y versión portátil para USB.',
+        'Desarrollé Kaori, aplicación de escritorio en Electron, React y TypeScript que genera los informes mensuales, las cuentas de cobro y los certificados de cumplimiento de contratos de prestación de servicios a partir de las plantillas Word de cada organización.',
+        'Construí y puse en producción Créditos La Red, plataforma web para gestionar créditos y préstamos: clientes, pagos y abonos, control de mora y notificaciones en tiempo real.',
       ],
-      tecnologias: ['C#', 'ASP.NET Core', 'SQL Server', 'Entity Framework', 'Azure DevOps'],
+      tecnologias: ['C#', '.NET 8', 'WPF', 'Electron', 'React', 'TypeScript'],
     },
     {
-      puesto: 'Desarrollador .NET Junior',
-      empresa: 'Empresa Anterior', // TODO
-      desde: 'Mar 2021',
-      hasta: 'Dic 2022',
-      ubicacion: 'Remoto',
-      modalidad: 'Tiempo completo',
+      puesto: 'Desarrollador en formación',
+      empresa: 'Proyectos académicos y personales',
+      desde: '2023',
+      hasta: '2025',
+      ubicacion: 'Colombia',
+      modalidad: null,
       descripcion:
-        'Mantenimiento de módulos de facturación y soporte a usuarios internos.',
+        'Aprendí construyendo: aplicaciones de escritorio, sistemas CRUD y sitios web en varios lenguajes, todos publicados en GitHub.',
       logros: [
-        'Corregí más de 80 incidencias en producción con un tiempo medio de resolución de 2 días.',
-        'Implementé pruebas unitarias en el módulo de cálculo de impuestos.',
+        'Aplicaciones de escritorio en C# y WPF conectadas a SQL Server, como un sistema de registro y gestión de estudiantes.',
+        'Sistemas CRUD de usuarios en PHP y en Java, y utilidades en C# como un carrito de compras con cálculo de IVA y un registro de gastos personales.',
+        'Sitios web con HTML, SCSS, JavaScript y TypeScript: landing pages, una tienda de productos y FacilFinanzas, una aplicación de finanzas personales.',
       ],
-      tecnologias: ['C#', '.NET Framework', 'SQL Server', 'jQuery'],
+      tecnologias: ['C#', 'WPF', 'SQL Server', 'PHP', 'Java', 'JavaScript', 'TypeScript'],
     },
   ],
 };
@@ -212,10 +214,12 @@ export const proyectos = {
         'Aplicación de escritorio que registra el contrato una vez y produce el informe de actividades, la cuenta de cobro y el certificado de cumplimiento de cualquier mes: calcula pagos, acumulados y saldos, y escribe fechas y cifras en letras. Parte de las plantillas Word de cada organización, así que los documentos salen con su formato intacto.',
       tecnologias: ['Electron', 'React', 'TypeScript', 'Tailwind CSS'],
       /** Imagen en `public/proyectos/`. 1200×750 px recomendado. `null` = degradado. */
-      imagen: null as string | null,
+      imagen: '/proyectos/kaori.jpg' as string | null,
       /** Enlaces. Pon `null` en los que no apliquen. */
       repo: 'https://github.com/John-Elith/Kaori' as string | null,
       demo: null as string | null,
+      /** Texto del enlace `demo`. `null` = «Ver demo». */
+      textoDemo: null as string | null,
       /** Marca `true` en 1 o 2 para que ocupen el doble de ancho. */
       destacado: true,
       /** Año o rango. */
@@ -227,9 +231,10 @@ export const proyectos = {
       descripcion:
         'Software de proyección para iglesias que funciona sin conexión a internet: letras, pasajes bíblicos, textos e imágenes listos para el culto, con control remoto desde el móvil dentro de la propia red local.',
       tecnologias: ['C#', '.NET 8', 'WPF', 'MVVM'],
-      imagen: null,
+      imagen: '/proyectos/coraza.jpg',
       repo: 'https://github.com/John-Elith/Coraza',
       demo: 'https://john-elith.github.io/Coraza/',
+      textoDemo: null,
       destacado: true,
       anio: '2026',
     },
@@ -239,10 +244,12 @@ export const proyectos = {
       descripcion:
         'Gestión de clientes, pagos y abonos, con control de mora y notificaciones en tiempo real. Cada negocio administra su cartera por separado.',
       tecnologias: ['React', 'Vite', 'SPA'],
-      imagen: null,
+      imagen: '/proyectos/creditos-la-red.jpg',
       repo: null,
+      // Es un servicio real en producción, no una demo.
       demo: 'https://creditoslared.com',
-      destacado: false,
+      textoDemo: 'Ver',
+      destacado: true,
       anio: '2026',
     },
   ],
@@ -253,7 +260,7 @@ export const proyectos = {
 
 export const redes = {
   titulo: 'Redes sociales',
-  subtitulo: 'Dónde encontrarme',
+  subtitulo: '¿Dónde encontrarme?',
   items: [
     {
       nombre: 'GitHub',
@@ -360,5 +367,9 @@ export const contacto = {
 export const pie = {
   /** Se muestra como «© 2026 John Elith». */
   desde: 2024,
-  nota: 'Hecho con Astro y bastante café.',
+  /** Va seguida del icono `notaIcono` (el café). */
+  nota: 'Hecho con Astro y bastante',
+  notaIcono: 'cafe' as NombreIcono,
+  /** Lo que lee un lector de pantalla en lugar del icono. */
+  notaIconoTexto: 'café',
 };
